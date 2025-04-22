@@ -38,5 +38,9 @@ export default defineNuxtConfig({
     },
     nitro: {
         preset: "cloudflare-pages",
+        output: {
+            dir: ".output/public", // 使输出目录与 Cloudflare Pages 的期望匹配
+            publicDir: ".output/public",
+        },
     },
 });
