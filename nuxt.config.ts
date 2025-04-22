@@ -3,7 +3,6 @@ export default defineNuxtConfig({
     devtools: { enabled: true },
 
     modules: [
-        "@nuxtjs/tailwindcss",
         [
             "@nuxtjs/tailwindcss",
             {
@@ -36,5 +35,4 @@ export default defineNuxtConfig({
         port: 7812, // 服务器端口
         host: "0.0.0.0", // This allows access from any IP
     },
-   
 });
