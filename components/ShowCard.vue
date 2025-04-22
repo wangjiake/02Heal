@@ -1,7 +1,7 @@
 <!-- components/CircularShowCard.vue -->
 <template>
     <div class="p-6 bg-white rounded-xl shadow-md">
-        <h2 class="text-3xl font-bold text-center mb-6">今天目标</h2>
+        <h2 class="text-3xl font-bold text-center mb-6">剩余目标</h2>
         <div v-if="dataLoaded" class="grid grid-cols-2 gap-3 md:gap-6">
             <div
                 v-for="(item, index) in nutritionData"
