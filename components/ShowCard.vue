@@ -11,6 +11,7 @@
                 <div
                     :class="[
                         item.color,
+                        parseFloat(item.value) < 0 ? 'bg-red-500' : item.color,
                         'w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full flex flex-col items-center justify-center text-white shadow-lg',
                     ]"
                 >
@@ -33,56 +34,49 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { getNutritionGoals } from "../utils/storage";
 
 // 创建响应式数据
 const nutritionData = ref([]);
 // 加载状态标志
 const dataLoaded = ref(false);
 
-// 从本地存储获取目标
-const getGoalsFromLocalStorage = () => {
-    if (process.client) {
-        const savedGoals = localStorage.getItem("nutritionGoals");
-        if (savedGoals) {
-            return JSON.parse(savedGoals);
-        }
-    }
-    return null;
-};
+// 默认营养数据（如果没有存储数据）
+const defaultNutritionData = [
+    {
+        title: "卡路里",
+        value: "0",
+        color: "bg-orange-500",
+        key: "calories",
+    },
+    {
+        title: "蛋白质",
+        value: "0",
+        color: "bg-green-500",
+        key: "protein",
+    },
+    {
+        title: "脂肪",
+        value: "0",
+        color: "bg-yellow-400",
+        key: "fat",
+    },
+    {
+        title: "碳水",
+        value: "0",
+        color: "bg-blue-400",
+        key: "carbs",
+    },
+];
 
-// 加载本地存储的目标数据
-const loadGoalsFromLocalStorage = () => {
-    const savedGoals = getGoalsFromLocalStorage();
-    if (savedGoals) {
+// 加载存储的目标数据
+const loadGoals = () => {
+    const savedGoals = getNutritionGoals();
+    if (savedGoals && savedGoals.length > 0) {
         nutritionData.value = savedGoals;
     } else {
-        // 如果本地存储中没有数据，设置所有值为0
-        nutritionData.value = [
-            {
-                title: "卡路里",
-                value: "0",
-                color: "bg-orange-500",
-                key: "calories",
-            },
-            {
-                title: "蛋白质",
-                value: "0",
-                color: "bg-green-500",
-                key: "protein",
-            },
-            {
-                title: "脂肪",
-                value: "0",
-                color: "bg-yellow-400",
-                key: "fat",
-            },
-            {
-                title: "碳水",
-                value: "0",
-                color: "bg-blue-400",
-                key: "carbs",
-            },
-        ];
+        // 如果没有存储数据，使用默认值
+        nutritionData.value = [...defaultNutritionData];
     }
     // 标记为已加载
     dataLoaded.value = true;
@@ -91,31 +85,24 @@ const loadGoalsFromLocalStorage = () => {
 // 设置监听器
 const setupEventListeners = () => {
     if (process.client) {
-        // 监听本地存储变化
-        window.addEventListener("storage", (event) => {
-            if (event.key === "nutritionGoals") {
-                loadGoalsFromLocalStorage();
-            }
-        });
-
         // 监听自定义事件
         window.addEventListener("nutritionGoalsUpdated", () => {
-            loadGoalsFromLocalStorage();
+            loadGoals();
         });
     }
 };
 
 // 组件挂载时
 onMounted(() => {
-    // 从本地存储加载数据
-    loadGoalsFromLocalStorage();
-    
+    // 加载数据
+    loadGoals();
+
     // 设置事件监听器
     setupEventListeners();
 });
 
 // 导出公共方法
 defineExpose({
-    refreshData: loadGoalsFromLocalStorage,
+    refreshData: loadGoals,
 });
 </script>

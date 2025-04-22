@@ -51,43 +51,32 @@
 
 <script setup>
 import { ref, onMounted, inject } from "vue";
+// 导入存储服务
+import {
+    getNutritionGoals,
+    setNutritionGoals,
+    setOriginalNutritionGoals,
+    dispatchEvent,
+} from "../utils/storage";
 
 // 尝试注入 toast 服务
 const toast = inject("toast", null);
 
 // 默认营养目标数据
 const defaultNutritionGoals = [
-    { title: "卡路里", value: "2000", color: "bg-orange-500", key: "calories" },
+    { title: "卡路里", value: "1653", color: "bg-orange-500", key: "calories" },
     {
         title: "蛋白质 (g)",
-        value: "150.0",
+        value: "130.0",
         color: "bg-green-500",
         key: "protein",
     },
-    { title: "脂肪 (g)", value: "65.0", color: "bg-yellow-400", key: "fat" },
-    { title: "碳水 (g)", value: "250.0", color: "bg-blue-400", key: "carbs" },
+    { title: "脂肪 (g)", value: "36.0", color: "bg-yellow-400", key: "fat" },
+    { title: "碳水 (g)", value: "150.0", color: "bg-blue-400", key: "carbs" },
 ];
 
 // 响应式数据
 const nutritionGoals = ref([...defaultNutritionGoals]);
-
-// 从 localStorage 获取目标
-const getGoalsFromLocalStorage = () => {
-    if (process.client) {
-        const savedGoals = localStorage.getItem("nutritionGoals");
-        if (savedGoals) {
-            return JSON.parse(savedGoals);
-        }
-    }
-    return null;
-};
-
-// 保存目标到 localStorage
-const saveGoalsToLocalStorage = (goals) => {
-    if (process.client) {
-        localStorage.setItem("nutritionGoals", JSON.stringify(goals));
-    }
-};
 
 // 定义emit事件
 const emit = defineEmits(["goals-updated"]);
@@ -131,18 +120,20 @@ const saveGoals = () => {
         return;
     }
 
-    saveGoalsToLocalStorage(nutritionGoals.value);
-    // 触发自定义事件，通知其他组件目标已更新
-    if (process.client) {
-        window.dispatchEvent(new Event("nutritionGoalsUpdated"));
+    // 保存目标作为当前目标和原始目标
+    setNutritionGoals(nutritionGoals.value);
+    setOriginalNutritionGoals(nutritionGoals.value);
 
-        // 使用 Toast 提示 (优先使用注入的 toast 服务)
-        if (toast) {
-            toast.success("营养目标已保存!");
-        } else if (window.$toast) {
-            window.$toast.success("营养目标已保存!");
-        }
+    // 触发自定义事件，通知其他组件目标已更新
+    dispatchEvent("nutritionGoalsUpdated");
+
+    // 显示成功提示
+    if (toast) {
+        toast.success("营养目标已保存!");
+    } else if (window.$toast) {
+        window.$toast.success("营养目标已保存!");
     }
+
     // 触发组件事件
     emit("goals-updated");
 };
@@ -150,26 +141,29 @@ const saveGoals = () => {
 // 重置为默认目标
 const resetToDefault = () => {
     nutritionGoals.value = [...defaultNutritionGoals];
-    saveGoalsToLocalStorage(nutritionGoals.value);
-    // 触发自定义事件，通知其他组件目标已重置
-    if (process.client) {
-        window.dispatchEvent(new Event("nutritionGoalsUpdated"));
 
-        // 使用 Toast 提示 (优先使用注入的 toast 服务)
-        if (toast) {
-            toast.success("已重置为默认目标!");
-        } else if (window.$toast) {
-            window.$toast.success("已重置为默认目标!");
-        }
+    // 保存默认目标作为当前目标和原始目标
+    setNutritionGoals(nutritionGoals.value);
+    setOriginalNutritionGoals(nutritionGoals.value);
+
+    // 触发自定义事件，通知其他组件目标已重置
+    dispatchEvent("nutritionGoalsUpdated");
+
+    // 显示成功提示
+    if (toast) {
+        toast.success("已重置为默认目标!");
+    } else if (window.$toast) {
+        window.$toast.success("已重置为默认目标!");
     }
+
     // 触发组件事件
     emit("goals-updated");
 };
 
-// 组件挂载时，从 localStorage 获取保存的目标
+// 组件挂载时，从存储服务获取保存的目标
 onMounted(() => {
-    const savedGoals = getGoalsFromLocalStorage();
-    if (savedGoals) {
+    const savedGoals = getNutritionGoals();
+    if (savedGoals && savedGoals.length > 0) {
         nutritionGoals.value = savedGoals;
     }
 });

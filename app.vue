@@ -1,5 +1,5 @@
 <template>
-    <NuxtLayout>
+    <NuxtLayout style="min-height: 100vh; display: flex; flex-direction: column;">
         <NuxtPage />
     </NuxtLayout>
     <ToastContainer ref="toastContainer" />

@@ -19,6 +19,19 @@
         </div>
 
         <form @submit.prevent="addFood" class="space-y-4">
+            <!-- 食物名称输入字段 -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    食物名称
+                </label>
+                <input
+                    type="text"
+                    v-model="foodName"
+                    placeholder="输入食物名称"
+                    class="block w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                />
+            </div>
+
             <div
                 v-for="(item, index) in nutritionValues"
                 :key="index"
@@ -71,11 +84,14 @@
                     class="py-3 flex justify-between items-center"
                 >
                     <div>
-                        <p class="font-medium">{{ food.name || '未命名食物' }}</p>
+                        <p class="font-medium">
+                            {{ food.name || "未命名食物" }}
+                        </p>
                         <p class="text-sm text-gray-500">
-                            卡路里: {{ food.calories }}kcal | 蛋白质:
-                            {{ food.protein }}g | 脂肪: {{ food.fat }}g | 碳水:
-                            {{ food.carbs }}g
+                            卡路里: {{ formatDisplayNumber(food.calories) }}kcal
+                            | 蛋白质: {{ formatDisplayNumber(food.protein) }}g |
+                            脂肪: {{ formatDisplayNumber(food.fat) }}g | 碳水:
+                            {{ formatDisplayNumber(food.carbs) }}g
                         </p>
                     </div>
                     <button
@@ -88,9 +104,11 @@
             </ul>
             <div class="mt-4 pt-4 border-t border-gray-200">
                 <p class="font-bold">
-                    今日总计: {{ dailyTotals.calories }}kcal, 蛋白质:
-                    {{ dailyTotals.protein }}g, 脂肪: {{ dailyTotals.fat }}g,
-                    碳水: {{ dailyTotals.carbs }}g
+                    今日总计:
+                    {{ formatDisplayNumber(dailyTotals.calories) }}kcal, 蛋白质:
+                    {{ formatDisplayNumber(dailyTotals.protein) }}g, 脂肪:
+                    {{ formatDisplayNumber(dailyTotals.fat) }}g, 碳水:
+                    {{ formatDisplayNumber(dailyTotals.carbs) }}g
                 </p>
             </div>
         </div>
@@ -99,9 +117,20 @@
 
 <script setup>
 import { ref, computed, onMounted, inject } from "vue";
+// 导入存储服务
+import {
+    getTodayFoods,
+    saveTodayFoods,
+    getVisibleFoodTags,
+    updateRemainingNutrition,
+    checkForDailyReset,
+} from "../utils/storage";
 
 // 尝试注入 toast 服务
 const toast = inject("toast", null);
+
+// 添加食物名称
+const foodName = ref("");
 
 // 响应式数据
 const nutritionValues = ref([
@@ -113,94 +142,38 @@ const nutritionValues = ref([
 const todayFoods = ref([]);
 const visibleTags = ref([]);
 
-// 计算每日总计
+// 用于显示格式化为2位小数的数值
+const formatDisplayNumber = (value) => {
+    return parseFloat(value || 0).toFixed(2);
+};
+
+// 用于计算时保持2位小数精度
+const formatCalculationNumber = (value) => {
+    return parseFloat(parseFloat(value || 0).toFixed(2));
+};
+
+// 计算每日总计（确保保留2位小数）
 const dailyTotals = computed(() => {
     return todayFoods.value.reduce(
         (totals, food) => {
             return {
-                calories: totals.calories + parseFloat(food.calories || 0),
-                protein: totals.protein + parseFloat(food.protein || 0),
-                fat: totals.fat + parseFloat(food.fat || 0),
-                carbs: totals.carbs + parseFloat(food.carbs || 0),
+                calories: formatCalculationNumber(
+                    totals.calories + parseFloat(food.calories || 0)
+                ),
+                protein: formatCalculationNumber(
+                    totals.protein + parseFloat(food.protein || 0)
+                ),
+                fat: formatCalculationNumber(
+                    totals.fat + parseFloat(food.fat || 0)
+                ),
+                carbs: formatCalculationNumber(
+                    totals.carbs + parseFloat(food.carbs || 0)
+                ),
             };
         },
         { calories: 0, protein: 0, fat: 0, carbs: 0 }
     );
 });
-
-// 从 localStorage 获取今日食物
-const getFoodsFromLocalStorage = () => {
-    if (process.client) {
-        const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD 格式
-        const savedFoods = localStorage.getItem(`foods_${currentDate}`);
-        if (savedFoods) {
-            return JSON.parse(savedFoods);
-        }
-    }
-    return [];
-};
-
-// 从 localStorage 获取可见标签
-const getVisibleTagsFromLocalStorage = () => {
-    if (process.client) {
-        const visibleTagsData = localStorage.getItem("visibleFoodTags");
-        if (visibleTagsData) {
-            return JSON.parse(visibleTagsData);
-        }
-    }
-    return [];
-};
-
-// 保存食物到 localStorage
-const saveFoodsToLocalStorage = (foods) => {
-    if (process.client) {
-        const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD 格式
-        localStorage.setItem(`foods_${currentDate}`, JSON.stringify(foods));
-    }
-};
-
-// 更新剩余目标营养值
-const updateRemainingNutrition = () => {
-    if (process.client) {
-        // 获取原始目标
-        const originalGoalsStr = localStorage.getItem("originalNutritionGoals");
-        if (!originalGoalsStr) return;
-
-        const originalGoals = JSON.parse(originalGoalsStr);
-
-        // 计算剩余目标 (目标 - 已消耗)
-        const remainingGoals = originalGoals.map((goal) => {
-            const totalConsumed = dailyTotals.value[goal.key] || 0;
-
-            // 将值转换为数字并计算剩余
-            const originalValue = parseFloat(goal.value);
-            const remaining = Math.max(0, originalValue - totalConsumed);
-
-            // 返回新对象
-            return {
-                ...goal,
-                value: remaining.toFixed(1),
-            };
-        });
-
-        // 保存今日消耗的营养值（独立存储）
-        const consumed = {
-            calories: dailyTotals.value.calories,
-            protein: dailyTotals.value.protein,
-            fat: dailyTotals.value.fat,
-            carbs: dailyTotals.value.carbs,
-        };
-
-        localStorage.setItem("consumedNutrition", JSON.stringify(consumed));
-
-        // 更新目标为剩余值并触发更新事件
-        localStorage.setItem("nutritionGoals", JSON.stringify(remainingGoals));
-        window.dispatchEvent(new Event("nutritionGoalsUpdated"));
-    }
-};
-
-// 定义emit事件
-const emit = defineEmits(["food-added"]);
 
 // 格式化数字，确保输入有效
 const formatNumber = (item) => {
@@ -223,7 +196,10 @@ const formatNumber = (item) => {
 
 // 应用标签数据到表单
 const applyTag = (tag) => {
-    nutritionValues.value.forEach(item => {
+    // 设置食物名称
+    foodName.value = tag.name;
+
+    nutritionValues.value.forEach((item) => {
         if (item.key === "calories") {
             item.value = tag.calories.toString();
         } else if (item.key === "protein") {
@@ -234,20 +210,46 @@ const applyTag = (tag) => {
             item.value = tag.carbs.toString();
         }
     });
-    
+
     // 添加食物（自动填充后立即添加）
-    addFood(tag.name);
-    
+    const newFood = {
+        name: tag.name,
+        calories: formatCalculationNumber(tag.calories),
+        protein: formatCalculationNumber(tag.protein),
+        fat: formatCalculationNumber(tag.fat),
+        carbs: formatCalculationNumber(tag.carbs),
+        addedAt: new Date().toISOString(),
+    };
+
+    // 添加到今日食物列表
+    todayFoods.value.push(newFood);
+    saveTodayFoods(todayFoods.value);
+    updateRemainingNutrition(dailyTotals.value);
+
+    // 清空表单
+    resetForm();
+
     // 显示提示
     if (toast) {
         toast.success(`已添加 "${tag.name}"!`);
     } else if (window.$toast) {
         window.$toast.success(`已添加 "${tag.name}"!`);
     }
+
+    // 触发组件事件
+    emit("food-added", newFood);
 };
 
+// 定义emit事件
+const emit = defineEmits(["food-added"]);
+
 // 添加食物
-const addFood = (foodName = null) => {
+const addFood = (event = null) => {
+    // 如果传入的是事件对象，防止表单默认提交行为
+    if (event && typeof event === "object" && event.preventDefault) {
+        event.preventDefault();
+    }
+
     // 处理输入值，如果为空则默认为0
     nutritionValues.value.forEach((item) => {
         if (!item.value || item.value.trim() === "") {
@@ -255,45 +257,40 @@ const addFood = (foodName = null) => {
         }
     });
 
-    // 准备食物数据
+    // 获取食物名称（使用用户输入的名称，如果为空则使用默认值）
+    const name = foodName.value || "未命名食物";
+
+    // 准备食物数据（确保所有营养值保留2位小数）
     const newFood = {
-        name: foodName || "食物", // 使用传入的名称或默认名称
-        calories:
-            parseFloat(
-                nutritionValues.value.find((item) => item.key === "calories")
-                    .value
-            ) || 0,
-        protein:
-            parseFloat(
-                nutritionValues.value.find((item) => item.key === "protein")
-                    .value
-            ) || 0,
-        fat:
-            parseFloat(
-                nutritionValues.value.find((item) => item.key === "fat").value
-            ) || 0,
-        carbs:
-            parseFloat(
-                nutritionValues.value.find((item) => item.key === "carbs").value
-            ) || 0,
+        name: name,
+        calories: formatCalculationNumber(
+            nutritionValues.value.find((item) => item.key === "calories").value
+        ),
+        protein: formatCalculationNumber(
+            nutritionValues.value.find((item) => item.key === "protein").value
+        ),
+        fat: formatCalculationNumber(
+            nutritionValues.value.find((item) => item.key === "fat").value
+        ),
+        carbs: formatCalculationNumber(
+            nutritionValues.value.find((item) => item.key === "carbs").value
+        ),
         addedAt: new Date().toISOString(),
     };
 
     // 添加到今日食物列表
     todayFoods.value.push(newFood);
-    saveFoodsToLocalStorage(todayFoods.value);
-    updateRemainingNutrition();
+    saveTodayFoods(todayFoods.value);
+    updateRemainingNutrition(dailyTotals.value);
 
     // 清空表单
     resetForm();
 
     // 显示成功提示
-    if (!foodName) { // 只有手动添加时才显示提示，标签自动添加时已经有提示了
-        if (toast) {
-            toast.success("食物已添加!");
-        } else if (window.$toast) {
-            window.$toast.success("食物已添加!");
-        }
+    if (toast) {
+        toast.success("食物已添加!");
+    } else if (window.$toast) {
+        window.$toast.success("食物已添加!");
     }
 
     // 触发组件事件
@@ -303,19 +300,22 @@ const addFood = (foodName = null) => {
 // 移除食物
 const removeFood = (index) => {
     todayFoods.value.splice(index, 1);
-    saveFoodsToLocalStorage(todayFoods.value);
-    updateRemainingNutrition();
+    saveTodayFoods(todayFoods.value);
+    updateRemainingNutrition(dailyTotals.value);
 
     // 显示提示
     if (toast) {
         toast.success("食物已删除!");
     } else if (window.$toast) {
-        toast.success("食物已删除!");
+        window.$toast.success("食物已删除!");
     }
 };
 
 // 重置表单
 const resetForm = () => {
+    // 重置食物名称
+    foodName.value = "";
+
     nutritionValues.value.forEach((item) => {
         item.value = "";
     });
@@ -332,49 +332,7 @@ const setupTagEventListener = () => {
 
 // 加载可见标签
 const loadVisibleTags = () => {
-    visibleTags.value = getVisibleTagsFromLocalStorage();
-};
-
-// 检查是否需要重置每日目标
-const checkForDailyReset = () => {
-    if (process.client) {
-        // 获取上次重置的日期
-        const lastResetDate = localStorage.getItem("lastGoalResetDate");
-        const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD 格式
-
-        // 如果没有重置过或者不是今天重置的
-        if (!lastResetDate || lastResetDate !== currentDate) {
-            // 重置日期并回复原始目标值
-            resetDailyGoals();
-            localStorage.setItem("lastGoalResetDate", currentDate);
-        }
-    }
-};
-
-// 重置每日目标到原始值
-const resetDailyGoals = () => {
-    if (process.client) {
-        // 检查是否有原始目标保存
-        const originalGoalsStr = localStorage.getItem("originalNutritionGoals");
-        if (originalGoalsStr) {
-            // 恢复原始目标
-            localStorage.setItem("nutritionGoals", originalGoalsStr);
-        } else {
-            // 如果没有保存原始目标，则获取当前目标并保存为原始目标
-            const currentGoals = localStorage.getItem("nutritionGoals");
-            if (currentGoals) {
-                localStorage.setItem("originalNutritionGoals", currentGoals);
-            }
-        }
-
-        // 清空当日食物记录
-        const currentDate = new Date().toISOString().split("T")[0];
-        localStorage.removeItem(`foods_${currentDate}`);
-        todayFoods.value = [];
-
-        // 触发目标更新事件
-        window.dispatchEvent(new Event("nutritionGoalsUpdated"));
-    }
+    visibleTags.value = getVisibleFoodTags();
 };
 
 // 组件挂载时
@@ -382,24 +340,16 @@ onMounted(() => {
     // 先检查是否需要重置每日目标
     checkForDailyReset();
 
-    // 确保原始目标存在
-    if (process.client && !localStorage.getItem("originalNutritionGoals")) {
-        const goals = localStorage.getItem("nutritionGoals");
-        if (goals) {
-            localStorage.setItem("originalNutritionGoals", goals);
-        }
-    }
-
     // 获取今日食物
-    const savedFoods = getFoodsFromLocalStorage();
+    const savedFoods = getTodayFoods();
     if (savedFoods && savedFoods.length > 0) {
         todayFoods.value = savedFoods;
-        updateRemainingNutrition();
+        updateRemainingNutrition(dailyTotals.value);
     }
-    
+
     // 加载可见标签
     loadVisibleTags();
-    
+
     // 设置标签变化的监听器
     setupTagEventListener();
 });

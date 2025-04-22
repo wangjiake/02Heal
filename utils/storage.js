@@ -1,0 +1,464 @@
+// utils/storage.js
+// localStorage 操作的通用服务模块
+
+// 检查是否在客户端环境
+const isClient = () => {
+    return process.client;
+};
+
+// 基本操作：获取数据
+export const getData = (key, defaultValue = null) => {
+    if (!isClient()) return defaultValue;
+
+    try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : defaultValue;
+    } catch (error) {
+        console.error(`Error getting data for key ${key}:`, error);
+        return defaultValue;
+    }
+};
+
+// 基本操作：设置数据
+export const setData = (key, value) => {
+    if (!isClient()) return false;
+
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+    } catch (error) {
+        console.error(`Error setting data for key ${key}:`, error);
+        return false;
+    }
+};
+
+// 基本操作：删除数据
+export const removeData = (key) => {
+    if (!isClient()) return false;
+
+    try {
+        localStorage.setItem(key, null);
+        localStorage.removeItem(key);
+        return true;
+    } catch (error) {
+        console.error(`Error removing data for key ${key}:`, error);
+        return false;
+    }
+};
+
+// 基本操作：触发事件
+export const dispatchEvent = (eventName) => {
+    if (!isClient()) return false;
+
+    try {
+        window.dispatchEvent(new Event(eventName));
+        return true;
+    } catch (error) {
+        console.error(`Error dispatching event ${eventName}:`, error);
+        return false;
+    }
+};
+
+// 将数值格式化为保留2位小数
+export const formatToTwoDecimals = (value) => {
+    return parseFloat(parseFloat(value).toFixed(2));
+};
+
+// 格式化营养对象中的所有数值为2位小数
+export const formatNutritionValues = (nutrition) => {
+    if (!nutrition) return { calories: 0, protein: 0, fat: 0, carbs: 0 };
+
+    return {
+        calories: formatToTwoDecimals(nutrition.calories || 0),
+        protein: formatToTwoDecimals(nutrition.protein || 0),
+        fat: formatToTwoDecimals(nutrition.fat || 0),
+        carbs: formatToTwoDecimals(nutrition.carbs || 0)
+    };
+};
+
+// ===== 专用方法：营养目标相关 =====
+
+// 获取今日日期格式化为 YYYY-MM-DD
+export const getTodayDateString = () => {
+    return new Date().toISOString().split("T")[0];
+};
+
+// 获取营养目标
+export const getNutritionGoals = () => {
+    return getData("nutritionGoals", []);
+};
+
+// 设置营养目标
+export const setNutritionGoals = (goals) => {
+    // 确保所有目标值保留2位小数
+    const formattedGoals = goals.map(goal => ({
+        ...goal,
+        value: parseFloat(parseFloat(goal.value).toFixed(2))
+    }));
+
+    const result = setData("nutritionGoals", formattedGoals);
+    if (result) {
+        dispatchEvent("nutritionGoalsUpdated");
+    }
+    return result;
+};
+
+// 获取原始营养目标
+export const getOriginalNutritionGoals = () => {
+    return getData("originalNutritionGoals", []);
+};
+
+// 设置原始营养目标
+export const setOriginalNutritionGoals = (goals) => {
+    // 确保所有目标值保留2位小数
+    const formattedGoals = goals.map(goal => ({
+        ...goal,
+        value: parseFloat(parseFloat(goal.value).toFixed(2))
+    }));
+
+    return setData("originalNutritionGoals", formattedGoals);
+};
+
+// 获取已消耗的营养值
+export const getConsumedNutrition = () => {
+    return getData("consumedNutrition", { calories: 0, protein: 0, fat: 0, carbs: 0 });
+};
+
+// 设置已消耗的营养值
+export const setConsumedNutrition = (consumed) => {
+    // 确保所有消耗值保留2位小数
+    const formattedConsumed = formatNutritionValues(consumed);
+    return setData("consumedNutrition", formattedConsumed);
+};
+
+// ===== 专用方法：食物相关 =====
+
+// 获取今日食物
+export const getTodayFoods = () => {
+    const dateKey = `foods_${getTodayDateString()}`;
+    return getData(dateKey, []);
+};
+
+// 保存今日食物
+export const saveTodayFoods = (foods) => {
+    // 确保食物营养值保留2位小数
+    const formattedFoods = foods.map(food => ({
+        ...food,
+        nutrition: food.nutrition ? formatNutritionValues(food.nutrition) : food.nutrition
+    }));
+
+    const dateKey = `foods_${getTodayDateString()}`;
+    return setData(dateKey, formattedFoods);
+};
+
+// 获取指定日期的食物
+export const getFoodsByDate = (dateString) => {
+    const dateKey = `foods_${dateString}`;
+    return getData(dateKey, []);
+};
+
+// 保存指定日期的食物
+export const saveFoodsByDate = (dateString, foods) => {
+    // 确保食物营养值保留2位小数
+    const formattedFoods = foods.map(food => ({
+        ...food,
+        nutrition: food.nutrition ? formatNutritionValues(food.nutrition) : food.nutrition
+    }));
+
+    const dateKey = `foods_${dateString}`;
+    return setData(dateKey, formattedFoods);
+};
+
+// 获取历史记录（默认30天）
+export const getFoodHistory = (days = 30) => {
+    const history = [];
+    const today = new Date();
+
+    for (let i = 0; i < days; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const dateString = date.toISOString().split("T")[0];
+        const foods = getFoodsByDate(dateString);
+
+        if (foods.length > 0) {
+            history.push({
+                date: dateString,
+                foods: foods
+            });
+        }
+    }
+
+    return history;
+};
+
+// ===== 专用方法：标签相关 =====
+
+// 获取食物标签
+export const getFoodTags = () => {
+    return getData("foodTags", []);
+};
+
+// 保存食物标签
+export const saveFoodTags = (tags) => {
+    const result = setData("foodTags", tags);
+    if (result) {
+        dispatchEvent("foodTagsUpdated");
+    }
+    return result;
+};
+
+// 获取可见标签
+export const getVisibleFoodTags = () => {
+    return getData("visibleFoodTags", []);
+};
+
+// 保存可见标签
+export const saveVisibleFoodTags = (tags) => {
+    const result = setData("visibleFoodTags", tags);
+    if (result) {
+        dispatchEvent("foodTagsUpdated");
+    }
+    return result;
+};
+
+// ===== 专用方法：每日重置相关 =====
+
+// 获取上次重置日期
+export const getLastResetDate = () => {
+    return getData("lastGoalResetDate", "");
+};
+
+// 设置上次重置日期
+export const setLastResetDate = (dateString) => {
+    return setData("lastGoalResetDate", dateString);
+};
+
+// 检查是否需要重置每日目标
+export const checkForDailyReset = () => {
+    if (!isClient()) return false;
+
+    const lastResetDate = getLastResetDate();
+    const currentDate = getTodayDateString();
+
+    // 如果没有重置过或者不是今天重置的
+    if (!lastResetDate || lastResetDate !== currentDate) {
+        resetDailyGoals();
+        setLastResetDate(currentDate);
+        return true;
+    }
+
+    return false;
+};
+
+// 重置每日目标到原始值
+export const resetDailyGoals = () => {
+    if (!isClient()) return false;
+
+    // 检查是否有原始目标保存
+    const originalGoals = getOriginalNutritionGoals();
+    if (originalGoals && originalGoals.length > 0) {
+        // 恢复原始目标
+        setNutritionGoals(originalGoals);
+    } else {
+        // 如果没有保存原始目标，则获取当前目标并保存为原始目标
+        const currentGoals = getNutritionGoals();
+        if (currentGoals && currentGoals.length > 0) {
+            setOriginalNutritionGoals(currentGoals);
+        }
+    }
+
+    // 清空当日食物记录
+    const currentDate = getTodayDateString();
+    removeData(`foods_${currentDate}`);
+
+    // 清空已消耗值，确保是0.00格式
+    setConsumedNutrition({ calories: 0, protein: 0, fat: 0, carbs: 0 });
+
+    // 触发目标更新事件
+    dispatchEvent("nutritionGoalsUpdated");
+
+    return true;
+};
+
+// 更新剩余营养目标
+export const updateRemainingNutrition = (dailyTotals) => {
+    if (!isClient()) return false;
+
+    // 获取原始目标
+    const originalGoals = getOriginalNutritionGoals();
+    if (!originalGoals || originalGoals.length === 0) return false;
+
+    // 格式化每日总计的值为2位小数
+    const formattedDailyTotals = formatNutritionValues(dailyTotals);
+
+    // 保存今日消耗的营养值（已格式化）
+    setConsumedNutrition(formattedDailyTotals);
+
+    // 计算剩余目标 (目标 - 已消耗)
+    const remainingGoals = originalGoals.map((goal) => {
+        const totalConsumed = formattedDailyTotals[goal.key] || 0;
+
+        // 将值转换为数字并计算剩余（允许负值）
+        const originalValue = parseFloat(goal.value);
+        const remaining = formatToTwoDecimals(originalValue - totalConsumed);
+
+        // 返回新对象，使用parseFloat来存储数值而非字符串
+        return {
+            ...goal,
+            value: remaining,
+        };
+    });
+
+    // 更新目标为剩余值并触发更新事件
+    setNutritionGoals(remainingGoals);
+
+    return true;
+};
+
+// Add these to your utils/storage.js file
+
+// ===== 专用方法：冷冻食物计算相关 =====
+
+// 获取保存的冷冻食物配置
+export const getFrozenFoodConfigurations = () => {
+    return getData("frozenFoodConfigurations", []);
+};
+
+// 保存冷冻食物配置
+export const saveFrozenFoodConfigurations = (configurations) => {
+    return setData("frozenFoodConfigurations", configurations);
+};
+
+// 计算冷冻后重量
+export const calculateFinalWeight = (originalWeight, lossRate) => {
+    if (!originalWeight || !lossRate) return 0;
+
+    const weightValue = parseFloat(originalWeight);
+    const lossRateValue = parseFloat(lossRate);
+
+    if (isNaN(weightValue) || isNaN(lossRateValue)) return 0;
+
+    // 计算损失后的重量 = 原始重量 * (1 - 损失率/100)
+    return formatToTwoDecimals(weightValue * (1 - lossRateValue / 100));
+};
+
+// 计算冷冻后的营养值
+export const calculateFinalNutrition = (nutritionPer100g, originalWeight, finalWeight) => {
+    // 默认值
+    const defaultValues = { calories: 0, protein: 0, fat: 0, carbs: 0 };
+
+    if (!originalWeight || !finalWeight) return defaultValues;
+
+    const weightValue = parseFloat(originalWeight);
+    const finalWeightValue = parseFloat(finalWeight);
+
+    if (isNaN(weightValue) || isNaN(finalWeightValue) || weightValue <= 0) return defaultValues;
+
+    // 计算原始营养值总量
+    const originalTotalNutrition = {
+        calories: (nutritionPer100g.calories * weightValue) / 100,
+        protein: (nutritionPer100g.protein * weightValue) / 100,
+        fat: (nutritionPer100g.fat * weightValue) / 100,
+        carbs: (nutritionPer100g.carbs * weightValue) / 100
+    };
+
+    // 计算最终营养值 (保持比例)
+    return formatNutritionValues(originalTotalNutrition);
+};
+
+// 添加冷冻食物
+export const addFrozenFood = (foodName, finalWeight, finalNutrition) => {
+    // 准备食物数据
+    const newFood = {
+        name: `${foodName} (冷冻${finalWeight}g)`,
+        calories: finalNutrition.calories,
+        protein: finalNutrition.protein,
+        fat: finalNutrition.fat,
+        carbs: finalNutrition.carbs,
+        addedAt: new Date().toISOString(),
+    };
+
+    // 获取今日食物
+    const todayFoods = getTodayFoods();
+
+    // 添加新食物
+    const updatedFoods = [...todayFoods, newFood];
+    saveTodayFoods(updatedFoods);
+
+    // 计算并更新今日总计
+    const dailyTotals = updatedFoods.reduce(
+        (totals, food) => {
+            return {
+                calories: formatToTwoDecimals(totals.calories + parseFloat(food.calories || 0)),
+                protein: formatToTwoDecimals(totals.protein + parseFloat(food.protein || 0)),
+                fat: formatToTwoDecimals(totals.fat + parseFloat(food.fat || 0)),
+                carbs: formatToTwoDecimals(totals.carbs + parseFloat(food.carbs || 0))
+            };
+        },
+        { calories: 0, protein: 0, fat: 0, carbs: 0 }
+    );
+
+    // 更新剩余营养目标
+    updateRemainingNutrition(dailyTotals);
+
+    return newFood;
+};
+
+// 计算袋装食物的营养值
+export const calculatePackagedNutrition = (nutritionPer100g, actualWeight) => {
+    // 默认值
+    const defaultValues = { calories: 0, protein: 0, fat: 0, carbs: 0 };
+    
+    if (!actualWeight) return defaultValues;
+    
+    const weightValue = parseFloat(actualWeight);
+    if (isNaN(weightValue) || weightValue <= 0) return defaultValues;
+    
+    // 计算实际重量的营养值 = 每100g的营养值 * (实际重量 / 100)
+    const ratio = weightValue / 100;
+    
+    return formatNutritionValues({
+        calories: nutritionPer100g.calories * ratio,
+        protein: nutritionPer100g.protein * ratio,
+        fat: nutritionPer100g.fat * ratio,
+        carbs: nutritionPer100g.carbs * ratio
+    });
+};
+
+// 添加袋装食物
+export const addPackagedFood = (foodName, weight, nutrition) => {
+    // 准备食物数据
+    const newFood = {
+        name: `${foodName} (${weight}g)`,
+        calories: nutrition.calories,
+        protein: nutrition.protein,
+        fat: nutrition.fat,
+        carbs: nutrition.carbs,
+        addedAt: new Date().toISOString(),
+    };
+    
+    // 获取今日食物
+    const todayFoods = getTodayFoods();
+    
+    // 添加新食物
+    const updatedFoods = [...todayFoods, newFood];
+    saveTodayFoods(updatedFoods);
+    
+    // 计算并更新今日总计
+    const dailyTotals = updatedFoods.reduce(
+        (totals, food) => {
+            return {
+                calories: formatToTwoDecimals(totals.calories + parseFloat(food.calories || 0)),
+                protein: formatToTwoDecimals(totals.protein + parseFloat(food.protein || 0)),
+                fat: formatToTwoDecimals(totals.fat + parseFloat(food.fat || 0)),
+                carbs: formatToTwoDecimals(totals.carbs + parseFloat(food.carbs || 0))
+            };
+        },
+        { calories: 0, protein: 0, fat: 0, carbs: 0 }
+    );
+    
+    // 更新剩余营养目标
+    updateRemainingNutrition(dailyTotals);
+    
+    return newFood;
+};
