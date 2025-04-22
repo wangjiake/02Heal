@@ -36,4 +36,7 @@ export default defineNuxtConfig({
         port: 7812, // 服务器端口
         host: "0.0.0.0", // This allows access from any IP
     },
+    nitro: {
+        preset: "cloudflare-pages",
+    },
 });
