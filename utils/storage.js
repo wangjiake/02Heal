@@ -78,9 +78,19 @@ export const formatNutritionValues = (nutrition) => {
 
 // ===== 专用方法：营养目标相关 =====
 
-// 获取今日日期格式化为 YYYY-MM-DD
+// 获取今日日期格式化为 YYYY-MM-DD，考虑凌晨重置
 export const getTodayDateString = () => {
-    return new Date().toISOString().split("T")[0];
+    const now = new Date();
+
+    // 如果当前时间是凌晨 0 点，视为昨天
+    if (now.getHours() === 0) {
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        return yesterday.toISOString().split("T")[0];
+    }
+
+    // 其他时间正常返回今天的日期
+    return now.toISOString().split("T")[0];
 };
 
 // 获取营养目标
@@ -133,13 +143,13 @@ export const setConsumedNutrition = (consumed) => {
 
 // ===== 专用方法：食物相关 =====
 
-// 获取今日食物
+// 获取今日食物，考虑凌晨处理
 export const getTodayFoods = () => {
     const dateKey = `foods_${getTodayDateString()}`;
     return getData(dateKey, []);
 };
 
-// 保存今日食物
+// 保存今日食物，考虑凌晨处理
 export const saveTodayFoods = (foods) => {
     // 确保食物营养值保留2位小数
     const formattedFoods = foods.map(food => ({
@@ -153,12 +163,28 @@ export const saveTodayFoods = (foods) => {
 
 // 获取指定日期的食物
 export const getFoodsByDate = (dateString) => {
+    // 如果请求的是今天的数据，调用getTodayFoods来处理凌晨特殊情况
+    const now = new Date();
+    const currentDate = now.toISOString().split("T")[0];
+
+    if (dateString === currentDate) {
+        return getTodayFoods();
+    }
+
     const dateKey = `foods_${dateString}`;
     return getData(dateKey, []);
 };
 
 // 保存指定日期的食物
 export const saveFoodsByDate = (dateString, foods) => {
+    // 如果保存到今天，调用saveTodayFoods来处理凌晨特殊情况
+    const now = new Date();
+    const currentDate = now.toISOString().split("T")[0];
+
+    if (dateString === currentDate) {
+        return saveTodayFoods(foods);
+    }
+
     // 确保食物营养值保留2位小数
     const formattedFoods = foods.map(food => ({
         ...food,
@@ -177,7 +203,15 @@ export const getFoodHistory = (days = 30) => {
     for (let i = 0; i < days; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() - i);
-        const dateString = date.toISOString().split("T")[0];
+        let dateString = date.toISOString().split("T")[0];
+
+        // 如果是今天且当前是凌晨0点，调整为昨天的日期
+        if (i === 0 && today.getHours() === 0) {
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            dateString = yesterday.toISOString().split("T")[0];
+        }
+
         const foods = getFoodsByDate(dateString);
 
         if (foods.length > 0) {
@@ -233,17 +267,28 @@ export const setLastResetDate = (dateString) => {
     return setData("lastGoalResetDate", dateString);
 };
 
-// 检查是否需要重置每日目标
+// 检查是否需要重置每日目标，考虑凌晨特殊情况
 export const checkForDailyReset = () => {
     if (!isClient()) return false;
 
     const lastResetDate = getLastResetDate();
-    const currentDate = getTodayDateString();
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    // 获取应该对比的日期（凌晨0点时视为昨天）
+    let dateToCompare;
+    if (currentHour === 0) {
+        // 凌晨0点，不需要重置
+        return false;
+    } else {
+        // 其他时间，正常对比今天的日期
+        dateToCompare = now.toISOString().split("T")[0];
+    }
 
     // 如果没有重置过或者不是今天重置的
-    if (!lastResetDate || lastResetDate !== currentDate) {
+    if (!lastResetDate || lastResetDate !== dateToCompare) {
         resetDailyGoals();
-        setLastResetDate(currentDate);
+        setLastResetDate(dateToCompare);
         return true;
     }
 
@@ -314,8 +359,6 @@ export const updateRemainingNutrition = (dailyTotals) => {
 
     return true;
 };
-
-// Add these to your utils/storage.js file
 
 // ===== 专用方法：冷冻食物计算相关 =====
 
@@ -408,15 +451,15 @@ export const addFrozenFood = (foodName, finalWeight, finalNutrition) => {
 export const calculatePackagedNutrition = (nutritionPer100g, actualWeight) => {
     // 默认值
     const defaultValues = { calories: 0, protein: 0, fat: 0, carbs: 0 };
-    
+
     if (!actualWeight) return defaultValues;
-    
+
     const weightValue = parseFloat(actualWeight);
     if (isNaN(weightValue) || weightValue <= 0) return defaultValues;
-    
+
     // 计算实际重量的营养值 = 每100g的营养值 * (实际重量 / 100)
     const ratio = weightValue / 100;
-    
+
     return formatNutritionValues({
         calories: nutritionPer100g.calories * ratio,
         protein: nutritionPer100g.protein * ratio,
@@ -436,14 +479,14 @@ export const addPackagedFood = (foodName, weight, nutrition) => {
         carbs: nutrition.carbs,
         addedAt: new Date().toISOString(),
     };
-    
+
     // 获取今日食物
     const todayFoods = getTodayFoods();
-    
+
     // 添加新食物
     const updatedFoods = [...todayFoods, newFood];
     saveTodayFoods(updatedFoods);
-    
+
     // 计算并更新今日总计
     const dailyTotals = updatedFoods.reduce(
         (totals, food) => {
@@ -456,9 +499,9 @@ export const addPackagedFood = (foodName, weight, nutrition) => {
         },
         { calories: 0, protein: 0, fat: 0, carbs: 0 }
     );
-    
+
     // 更新剩余营养目标
     updateRemainingNutrition(dailyTotals);
-    
+
     return newFood;
 };
