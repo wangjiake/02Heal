@@ -29,22 +29,41 @@ export default defineNuxtConfig({
                 },
             ],
         },
-        // 添加构建配置，包含时间戳
-        buildAssetsDir: `_nuxt_${Date.now()}/`,
     },
     // 开发服务器配置
     devServer: {
         port: 7812, // 服务器端口
         host: "0.0.0.0", // This allows access from any IP
     },
-    // 添加 vite 配置，确保构建时使用时间戳
+    // 确保静态资源有正确的缓存头
+    nitro: {
+        esbuild: {
+            options: {
+                define: {
+                    "process.env.BUILD_TIME": JSON.stringify(
+                        new Date().toISOString()
+                    ),
+                },
+            },
+        },
+    },
+    // 配置文件生成策略
     vite: {
         build: {
             rollupOptions: {
                 output: {
-                    entryFileNames: `[name].[hash]-${Date.now()}.js`,
-                    chunkFileNames: `[name].[hash]-${Date.now()}.js`,
-                    assetFileNames: `[name].[hash]-${Date.now()}.[ext]`,
+                    // 为文件名添加时间戳，但不改变目录结构
+                    entryFileNames: `entry.[hash].${Date.now()}.js`,
+                    chunkFileNames: `chunk.[hash].${Date.now()}.js`,
+                    assetFileNames: (info) => {
+                        const timestamp = Date.now();
+                        // 安全地检查文件名
+                        const fileName = info?.name || "";
+                        if (fileName.endsWith(".css")) {
+                            return `styles.[hash].${timestamp}.css`;
+                        }
+                        return `assets/[name].[hash].${timestamp}.[ext]`;
+                    },
                 },
             },
         },
