@@ -1,6 +1,4 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-const timestamp = new Date().getTime()
-
 export default defineNuxtConfig({
     devtools: { enabled: true },
 
@@ -18,7 +16,6 @@ export default defineNuxtConfig({
     ],
 
     compatibilityDate: "2025-04-21",
-
     app: {
         head: {
             title: "减脂计算",
@@ -33,28 +30,9 @@ export default defineNuxtConfig({
             ],
         },
     },
-
     // 开发服务器配置
     devServer: {
-        port: 7812,
-        host: "0.0.0.0",
+        port: 7812, // 服务器端口
+        host: "0.0.0.0", // This allows access from any IP
     },
-
-    // 重点：vite 构建配置
-    vite: {
-        build: {
-            rollupOptions: {
-                output: {
-                    entryFileNames: `assets/[name].${timestamp}.js`,
-                    chunkFileNames: `assets/[name].${timestamp}.js`,
-                    assetFileNames: (assetInfo) => {
-                        if (assetInfo.name && assetInfo.name.endsWith('.css')) {
-                            return `assets/[name].${timestamp}[extname]`
-                        }
-                        return `assets/[name].[ext]`
-                    },
-                },
-            },
-        },
-    },
-})
+});
