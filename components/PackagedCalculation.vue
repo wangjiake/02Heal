@@ -1,19 +1,19 @@
 <!-- components/PackagedCalculation.vue -->
 <template>
     <div class="p-4 bg-white rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">袋装食品计算</h2>
+        <h2 class="text-xl font-bold mb-4">{{ $t("袋装食品计算") }}</h2>
 
         <form @submit.prevent="calculateAndAddFood" class="space-y-4">
             <!-- 食物名称 -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    食物名称
+                    {{ $t("食物名称") }}
                 </label>
                 <input
                     type="text"
                     v-model="foodName"
                     class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    placeholder="例如: 蛋白棒"
+                    :placeholder="$t('例如: 蛋白棒')"
                 />
             </div>
 
@@ -47,7 +47,7 @@
             <!-- 实际重量 -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    实际重量 (g)
+                    {{ $t("实际重量") }} (g)
                 </label>
                 <div class="relative rounded-md shadow-sm">
                     <input
@@ -68,7 +68,7 @@
             <!-- 常用重量快速选择 -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    常用重量快速选择
+                    {{ $t("常用重量快速选择") }}
                 </label>
                 <div class="flex flex-wrap gap-2">
                     <button
@@ -85,28 +85,28 @@
 
             <!-- 计算结果 -->
             <div class="mt-6 p-4 bg-gray-100 rounded-lg">
-                <h3 class="text-md font-bold mb-2">计算结果:</h3>
+                <h3 class="text-md font-bold mb-2">{{ $t("计算结果") }}:</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <p class="text-sm text-gray-700">卡路里:</p>
+                        <p class="text-sm text-gray-700">{{ $t("卡路里") }}:</p>
                         <p class="text-lg font-medium">
                             {{ finalNutrition.calories }}kcal
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">蛋白质:</p>
+                        <p class="text-sm text-gray-700">{{ $t("蛋白质") }}:</p>
                         <p class="text-lg font-medium">
                             {{ finalNutrition.protein }}g
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">脂肪:</p>
+                        <p class="text-sm text-gray-700">{{ $t("脂肪") }}:</p>
                         <p class="text-lg font-medium">
                             {{ finalNutrition.fat }}g
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">碳水:</p>
+                        <p class="text-sm text-gray-700">{{ $t("碳水") }}:</p>
                         <p class="text-lg font-medium">
                             {{ finalNutrition.carbs }}g
                         </p>
@@ -120,7 +120,7 @@
                     type="submit"
                     class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
-                    计算并添加食物
+                    {{ $t("计算并添加食物") }}
                 </button>
                 <!-- 清空表单按钮 -->
                 <button
@@ -128,7 +128,7 @@
                     @click="resetForm"
                     class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 >
-                    清空表单
+                    {{ $t("清空表单") }}
                 </button>
             </div>
         </form>
@@ -136,19 +136,21 @@
 </template>
 
 <script setup>
-import { ref, computed, inject } from "vue";
+import { ref, computed, inject } from 'vue';
 import {
     formatToTwoDecimals,
     calculatePackagedNutrition,
     addPackagedFood,
-} from "../utils/storage";
+} from '../utils/storage';
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 // 尝试注入 toast 服务
-const toast = inject("toast", null);
+const toast = inject('toast', null);
 
 // 响应式数据
-const foodName = ref("");
-const weight = ref("");
+const foodName = ref('');
+const weight = ref('');
 
 // 常用重量选择
 const commonWeights = [25, 30, 45, 50, 60, 75, 100, 115, 150, 200];
@@ -156,40 +158,50 @@ const commonWeights = [25, 30, 45, 50, 60, 75, 100, 115, 150, 200];
 // 营养值输入 (每100g)
 const nutritionValues = ref([
     {
-        title: "卡路里 (每100g)",
-        value: "",
-        color: "bg-orange-500",
-        key: "calories",
+        title: t('卡路里 (每100g)')  ,
+        value: '',
+        color: 'bg-orange-500',
+        key: 'calories',
     },
     {
-        title: "蛋白质 (每100g)",
-        value: "",
-        color: "bg-green-500",
-        key: "protein",
+        title: t('蛋白质 (每100g)')  ,
+        value: '',
+        color: 'bg-green-500',
+        key: 'protein',
     },
-    { title: "脂肪 (每100g)", value: "", color: "bg-yellow-400", key: "fat" },
-    { title: "碳水 (每100g)", value: "", color: "bg-blue-400", key: "carbs" },
+    { 
+        title: t('脂肪 (每100g)')  , 
+        value: '', 
+        color: 'bg-yellow-400', 
+        key: 'fat' 
+    },
+    { 
+        title: t('碳水 (每100g)')  , 
+        value: '', 
+        color: 'bg-blue-400', 
+        key: 'carbs' 
+    },
 ]);
 
 // 定义emit事件
-const emit = defineEmits(["food-added"]);
+const emit = defineEmits(['food-added']);
 
 // 获取当前营养值每100g对象
 const getNutritionPer100g = () => {
     return {
         calories: parseFloat(
-            nutritionValues.value.find((item) => item.key === "calories")
+            nutritionValues.value.find((item) => item.key === 'calories')
                 .value || 0
         ),
         protein: parseFloat(
-            nutritionValues.value.find((item) => item.key === "protein")
+            nutritionValues.value.find((item) => item.key === 'protein')
                 .value || 0
         ),
         fat: parseFloat(
-            nutritionValues.value.find((item) => item.key === "fat").value || 0
+            nutritionValues.value.find((item) => item.key === 'fat').value || 0
         ),
         carbs: parseFloat(
-            nutritionValues.value.find((item) => item.key === "carbs").value ||
+            nutritionValues.value.find((item) => item.key === 'carbs').value ||
                 0
         ),
     };
@@ -199,10 +211,10 @@ const getNutritionPer100g = () => {
 const finalNutrition = computed(() => {
     // 默认值
     const defaultValues = {
-        calories: "0.00",
-        protein: "0.00",
-        fat: "0.00",
-        carbs: "0.00",
+        calories: '0.00',
+        protein: '0.00',
+        fat: '0.00',
+        carbs: '0.00',
     };
 
     if (!weight.value) return defaultValues;
@@ -223,7 +235,7 @@ const finalNutrition = computed(() => {
 const calculateAndAddFood = () => {
     // 验证表单
     if (!isFormValid()) {
-        showToast("请填写完整的食物信息", "error");
+        showToast(t('请填写完整的食物信息'), 'error');
         return;
     }
 
@@ -236,10 +248,10 @@ const calculateAndAddFood = () => {
     });
 
     // 显示提示
-    showToast(`已添加食物: ${newFood.name}`);
+    showToast(t('已添加食物') + ': ' + newFood.name);
 
     // 触发组件事件
-    emit("food-added", newFood);
+    emit('food-added', newFood);
 };
 
 // 验证表单
@@ -262,17 +274,17 @@ const isFormValid = () => {
 const formatNumber = (item) => {
     // 如果不是数字格式，转换为有效数字或清空
     if (item.value && isNaN(parseFloat(item.value))) {
-        item.value = "";
+        item.value = '';
     }
 
     // 移除非数字和非小数点字符
     if (item.value) {
-        item.value = item.value.replace(/[^\d.]/g, "");
+        item.value = item.value.replace(/[^\d.]/g, '');
 
         // 确保只有一个小数点
-        const parts = item.value.split(".");
+        const parts = item.value.split('.');
         if (parts.length > 2) {
-            item.value = parts[0] + "." + parts.slice(1).join("");
+            item.value = parts[0] + '.' + parts.slice(1).join('');
         }
     }
 };
@@ -284,27 +296,27 @@ const formatWeightInput = () => {
 
 // 重置表单
 const resetForm = () => {
-    foodName.value = "";
-    weight.value = "";
+    foodName.value = '';
+    weight.value = '';
 
     // 重置营养值
     nutritionValues.value.forEach((item) => {
-        item.value = "";
+        item.value = '';
     });
 };
 
 // 显示提示
-const showToast = (message, type = "success") => {
+const showToast = (message, type = 'success') => {
     if (toast) {
-        if (type === "success") {
+        if (type === 'success') {
             toast.success(message);
-        } else if (type === "error") {
+        } else if (type === 'error') {
             toast.error(message);
         }
     } else if (window.$toast) {
-        if (type === "success") {
+        if (type === 'success') {
             window.$toast.success(message);
-        } else if (type === "error") {
+        } else if (type === 'error') {
             window.$toast.error(message);
         }
     }

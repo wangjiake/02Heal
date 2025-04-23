@@ -1,7 +1,7 @@
 <!-- components/FrozenCalculation.vue -->
 <template>
     <div class="p-4 bg-white rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">冷冻食物计算</h2>
+        <h2 class="text-xl font-bold mb-4">{{ $t("冷冻食物计算") }}</h2>
 
         <!-- 保存的配置下拉列表 -->
         <div class="mb-6">
@@ -9,7 +9,7 @@
                 id="saved-config-label"
                 class="block text-sm font-medium text-gray-700 mb-1"
             >
-                选择保存的配置
+                {{ $t("选择保存的配置") }}
             </label>
             <div class="flex gap-3">
                 <div class="relative w-full">
@@ -25,7 +25,7 @@
                             class="col-start-1 row-start-1 flex items-center pr-6 truncate"
                         >
                             <span class="block truncate">{{
-                                selectedConfigName || "-- 选择配置 --"
+                                selectedConfigName || $t("选择配置")
                             }}</span>
                         </span>
                         <svg
@@ -69,7 +69,7 @@
                         >
                             <div class="flex items-center">
                                 <span class="block truncate font-normal"
-                                    >-- 选择配置 --</span
+                                    >{{ $t("选择配置") }}</span
                                 >
                             </div>
                             <span
@@ -148,7 +148,7 @@
                     @click="deleteConfiguration"
                     class="px-4 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 h-[54px] whitespace-nowrap text-xs sm:text-sm md:text-base"
                 >
-                    删除配置
+                    {{ $t("删除配置") }}
                 </button>
             </div>
         </div>
@@ -157,13 +157,13 @@
             <!-- 食物名称 -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    食物名称
+                    {{ $t("食物名称") }}
                 </label>
                 <input
                     type="text"
                     v-model="foodName"
                     class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    placeholder="例如: 煎鸡胸肉"
+                    :placeholder="$t('例如: 煎鸡胸肉')"
                 />
             </div>
 
@@ -198,7 +198,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                        原始重量 (g)
+                        {{ $t("原始重量") }} (g)
                     </label>
                     <div class="relative rounded-md shadow-sm">
                         <input
@@ -217,7 +217,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                        损失率 (%)
+                        {{ $t("损失率") }} (%)
                     </label>
                     <div class="relative rounded-md shadow-sm">
                         <input
@@ -238,32 +238,32 @@
 
             <!-- 计算结果 -->
             <div class="mt-6 p-4 bg-gray-100 rounded-lg">
-                <h3 class="text-md font-bold mb-2">计算结果:</h3>
+                <h3 class="text-md font-bold mb-2">{{ $t("计算结果") }}:</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <p class="text-sm text-gray-700">冷冻后重量:</p>
+                        <p class="text-sm text-gray-700">{{ $t("冷冻后重量") }}:</p>
                         <p class="text-lg font-medium">{{ finalWeight }}g</p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">卡路里:</p>
+                        <p class="text-sm text-gray-700">{{ $t("卡路里") }}:</p>
                         <p class="text-lg font-medium">
                             {{ finalNutrition.calories }}kcal
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">蛋白质:</p>
+                        <p class="text-sm text-gray-700">{{ $t("蛋白质") }}:</p>
                         <p class="text-lg font-medium">
                             {{ finalNutrition.protein }}g
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">脂肪:</p>
+                        <p class="text-sm text-gray-700">{{ $t("脂肪") }}:</p>
                         <p class="text-lg font-medium">
                             {{ finalNutrition.fat }}g
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">碳水:</p>
+                        <p class="text-sm text-gray-700">{{ $t("碳水") }}:</p>
                         <p class="text-lg font-medium">
                             {{ finalNutrition.carbs }}g
                         </p>
@@ -277,7 +277,7 @@
                     type="submit"
                     class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
-                    计算并添加食物
+                    {{ $t("计算并添加食物") }}
                 </button>
                 <!-- 保存配置按钮 -->
                 <button
@@ -285,7 +285,7 @@
                     @click="saveConfiguration"
                     class="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
-                    保存当前配置
+                    {{ $t("保存当前配置") }}
                 </button>
                 <!-- 清空表单按钮 -->
                 <button
@@ -293,7 +293,7 @@
                     @click="resetForm"
                     class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 >
-                    清空表单
+                    {{ $t("清空表单") }}
                 </button>
             </div>
         </form>
@@ -303,16 +303,15 @@
 <script setup>
 import { ref, computed, onMounted, inject, watch } from "vue";
 import {
-    getTodayFoods,
-    formatToTwoDecimals,
-    formatNutritionValues,
     getFrozenFoodConfigurations,
     saveFrozenFoodConfigurations,
     calculateFinalWeight,
     calculateFinalNutrition,
     addFrozenFood,
 } from "../utils/storage";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 // 尝试注入 toast 服务
 const toast = inject("toast", null);
 
@@ -328,19 +327,19 @@ const isOpen = ref(false);
 // 营养值输入
 const nutritionValues = ref([
     {
-        title: "卡路里 (每100g)",
+        title: t('卡路里 (每100g)'),
         value: "",
         color: "bg-orange-500",
         key: "calories",
     },
     {
-        title: "蛋白质 (每100g)",
+        title: t('蛋白质 (每100g)'),
         value: "",
         color: "bg-green-500",
         key: "protein",
     },
-    { title: "脂肪 (每100g)", value: "", color: "bg-yellow-400", key: "fat" },
-    { title: "碳水 (每100g)", value: "", color: "bg-blue-400", key: "carbs" },
+    { title: t('脂肪 (每100g)'), value: "", color: "bg-yellow-400", key: "fat" },
+    { title: t('碳水 (每100g)'), value: "", color: "bg-blue-400", key: "carbs" },
 ]);
 
 // 定义emit事件
@@ -406,7 +405,7 @@ const applySelectedConfig = () => {
         // 重量可能需要用户每次单独输入，所以不设置
 
         // 显示提示
-        showToast(`已加载配置: ${selectedConfig.name}`);
+        showToast(t('已加载配置')+(`: ${selectedConfig.name}`));
     }
 };
 
@@ -414,7 +413,7 @@ const applySelectedConfig = () => {
 const saveConfiguration = () => {
     // 检查是否有必要的输入
     if (!foodName.value || !isFormValid()) {
-        showToast("请填写完整的食物信息", "error");
+        showToast(t('请填写完整的食物信息'), "error");
         return;
     }
 
@@ -451,7 +450,7 @@ const saveConfiguration = () => {
     selectedConfigName.value = newConfig.name;
 
     // 显示提示
-    showToast(`配置已保存: ${newConfig.name}`);
+    showToast(t('配置已保存')+(`: ${newConfig.name}`));
 };
 
 // 删除选中的配置
@@ -471,7 +470,7 @@ const deleteConfiguration = () => {
     selectedConfigName.value = "";
 
     // 显示提示
-    showToast("配置已删除");
+    showToast(t('配置已删除'));
 };
 
 // 获取当前营养值每100g对象
@@ -537,7 +536,7 @@ const finalNutrition = computed(() => {
 const calculateAndAddFood = () => {
     // 验证表单
     if (!isFormValid()) {
-        showToast("请填写完整的食物信息", "error");
+        showToast(t('请填写完整的食物信息'), "error");
         return;
     }
 
@@ -550,7 +549,7 @@ const calculateAndAddFood = () => {
     });
 
     // 显示提示
-    showToast(`已添加冷冻食物: ${newFood.name}`);
+    showToast(t('已添加冷冻食物')+(`: ${newFood.name}`));
 
     // 触发组件事件
     emit("food-added", newFood);

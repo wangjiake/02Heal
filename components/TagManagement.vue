@@ -2,7 +2,7 @@
 <template>
     <div class="p-4 bg-white rounded-lg shadow">
         <h2 class="text-xl font-bold mb-4">
-            {{ isEditing ? "编辑标签" : "快速添加标签管理" }}
+            {{ isEditing ? $t("编辑标签") : $t("快速添加标签管理") }}
         </h2>
 
         <form
@@ -11,13 +11,13 @@
         >
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    标签名称
+                    {{ $t("标签名称") }}
                 </label>
                 <div class="relative rounded-md shadow-sm">
                     <input
                         type="text"
                         v-model="tagName"
-                        placeholder="输入标签名称"
+                        :placeholder="$t('输入标签名称')"
                         class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                         :disabled="isEditing && editingTag.fixed"
                     />
@@ -55,20 +55,20 @@
                     type="submit"
                     class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
-                    {{ isEditing ? "保存修改" : "保存标签" }}
+                    {{ isEditing ? $t("保存修改") : $t("保存标签") }}
                 </button>
                 <button
                     type="button"
                     @click="cancelEdit"
                     class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 >
-                    {{ isEditing ? "取消编辑" : "清空表单" }}
+                    {{ isEditing ? $t("取消编辑") : $t("清空表单") }}
                 </button>
             </div>
         </form>
 
         <div v-if="mergedTags.length > 0" class="mt-8">
-            <h3 class="text-lg font-bold mb-3">已保存的标签</h3>
+            <h3 class="text-lg font-bold mb-3">{{ $t("已保存的标签") }}</h3>
             <ul class="divide-y divide-gray-200">
                 <li
                     v-for="(tag, index) in mergedTags"
@@ -83,12 +83,12 @@
                                 v-if="tag.fixed"
                                 class="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full"
                             >
-                                系统标签
+                                {{ $t("系统标签") }}
                             </span>
                         </div>
                         <p class="text-sm text-gray-500">
-                            卡路里: {{ tag.calories }}kcal | 蛋白质:
-                            {{ tag.protein }}g | 脂肪: {{ tag.fat }}g | 碳水:
+                            {{ $t("卡路里") }}: {{ tag.calories }}kcal | {{ $t("蛋白质") }}:
+                            {{ tag.protein }}g | {{ $t("脂肪") }}: {{ tag.fat }}g | {{ $t("碳水") }}:
                             {{ tag.carbs }}g
                         </p>
                     </div>
@@ -96,7 +96,7 @@
                         <button
                             @click="editTag(tag)"
                             class="text-blue-500 hover:text-blue-700 focus:outline-none"
-                            title="编辑标签"
+                            :title="$t('编辑标签')"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +116,7 @@
                         <button
                             @click="toggleTagVisibility(tag)"
                             class="focus:outline-none"
-                            :title="tag.visible ? '隐藏标签' : '显示标签'"
+                            :title="tag.visible ? $t('隐藏标签') : $t('显示标签')"
                         >
                             <svg
                                 v-if="tag.visible"
@@ -159,7 +159,7 @@
                             v-if="!tag.fixed"
                             @click="removeTag(tag)"
                             class="text-red-500 hover:text-red-700 focus:outline-none"
-                            title="删除标签"
+                            :title="$t('删除标签')"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -184,7 +184,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from "vue";
+import { ref, computed, onMounted, inject } from 'vue';
 import {
     getData,
     setData,
@@ -193,28 +193,30 @@ import {
     getVisibleFoodTags,
     saveVisibleFoodTags,
     dispatchEvent,
-} from "../utils/storage";
+} from '../utils/storage';
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 // 尝试注入 toast 服务
-const toast = inject("toast", null);
+const toast = inject('toast', null);
 
 // 响应式数据
-const tagName = ref("");
+const tagName = ref('');
 const nutritionValues = ref([
-    { title: "卡路里", value: "", color: "bg-orange-500", key: "calories" },
-    { title: "蛋白质 (g)", value: "", color: "bg-green-500", key: "protein" },
-    { title: "脂肪 (g)", value: "", color: "bg-yellow-400", key: "fat" },
-    { title: "碳水 (g)", value: "", color: "bg-blue-400", key: "carbs" },
+    { title: t('卡路里'), value: '', color: 'bg-orange-500', key: 'calories' },
+    { title: t('蛋白质') + ' (g)', value: '', color: 'bg-green-500', key: 'protein' },
+    { title: t('脂肪') + ' (g)', value: '', color: 'bg-yellow-400', key: 'fat' },
+    { title: t('碳水') + ' (g)', value: '', color: 'bg-blue-400', key: 'carbs' },
 ]);
 const savedTags = ref([]);
 const isEditing = ref(false);
 const editingTag = ref(null);
-const originalTagName = ref("");
+const originalTagName = ref('');
 
 // 固定标签列表 - 不可删除但可以隐藏
 const fixedTags = ref([
     {
-        name: "鸡蛋",
+        name: t('鸡蛋'),
         calories: 72,
         protein: 6.3,
         fat: 4.8,
@@ -224,7 +226,7 @@ const fixedTags = ref([
         createdAt: new Date().toISOString(),
     },
     {
-        name: "香蕉",
+        name: t('香蕉'),
         calories: 105,
         protein: 1.3,
         fat: 0.4,
@@ -234,7 +236,7 @@ const fixedTags = ref([
         createdAt: new Date().toISOString(),
     },
     {
-        name: "全粒面包",
+        name: t('全粒面包'),
         calories: 155,
         protein: 5.2,
         fat: 2.8,
@@ -244,7 +246,7 @@ const fixedTags = ref([
         createdAt: new Date().toISOString(),
     },
     {
-        name: "牛奶",
+        name: t('牛奶'),
         calories: 102,
         protein: 5.1,
         fat: 5.8,
@@ -254,7 +256,7 @@ const fixedTags = ref([
         createdAt: new Date().toISOString(),
     },
     {
-        name: "蛋白粉",
+        name: t('蛋白粉'),
         calories: 132,
         protein: 26.5,
         fat: 1.4,
@@ -264,7 +266,7 @@ const fixedTags = ref([
         createdAt: new Date().toISOString(),
     },
     {
-        name: "肌酸",
+        name: t('肌酸'),
         calories: 18,
         protein: 4.4,
         fat: 0,
@@ -282,7 +284,7 @@ const mergedTags = computed(() => {
 
 // 从 localStorage 获取固定标签的可见性
 const getFixedTagsVisibility = () => {
-    return getData("fixedTagsVisibility", null);
+    return getData('fixedTagsVisibility', null);
 };
 
 // 保存固定标签的可见性
@@ -291,7 +293,7 @@ const saveFixedTagsVisibility = () => {
     fixedTags.value.forEach((tag) => {
         visibilityMap[tag.name] = tag.visible;
     });
-    setData("fixedTagsVisibility", visibilityMap);
+    setData('fixedTagsVisibility', visibilityMap);
 };
 
 // 更新可见标签
@@ -304,27 +306,27 @@ const updateVisibleTags = () => {
     saveFixedTagsVisibility();
 
     // 触发自定义事件，通知其他组件标签已更新
-    dispatchEvent("foodTagsUpdated");
+    dispatchEvent('foodTagsUpdated');
 };
 
 // 定义emit事件
-const emit = defineEmits(["tag-added", "tag-updated"]);
+const emit = defineEmits(['tag-added', 'tag-updated']);
 
 // 格式化数字，确保输入有效
 const formatNumber = (item) => {
     // 如果不是数字格式，转换为有效数字或清空
     if (item.value && isNaN(parseFloat(item.value))) {
-        item.value = "";
+        item.value = '';
     }
 
     // 移除非数字和非小数点字符
     if (item.value) {
-        item.value = item.value.replace(/[^\d.]/g, "");
+        item.value = item.value.replace(/[^\d.]/g, '');
 
         // 确保只有一个小数点
-        const parts = item.value.split(".");
+        const parts = item.value.split('.');
         if (parts.length > 2) {
-            item.value = parts[0] + "." + parts.slice(1).join("");
+            item.value = parts[0] + '.' + parts.slice(1).join('');
         }
     }
 };
@@ -334,9 +336,9 @@ const saveTag = () => {
     // 检查标签名称
     if (!tagName.value.trim()) {
         if (toast) {
-            toast.error("请输入标签名称!");
+            toast.error(t('请输入标签名称!'));
         } else if (window.$toast) {
-            window.$toast.error("请输入标签名称!");
+            window.$toast.error(t('请输入标签名称!'));
         }
         return;
     }
@@ -344,9 +346,9 @@ const saveTag = () => {
     // 检查是否与固定标签重名
     if (fixedTags.value.some((tag) => tag.name === tagName.value.trim())) {
         if (toast) {
-            toast.error("标签名称已存在于系统标签中!");
+            toast.error(t('标签名称已存在于系统标签中!'));
         } else if (window.$toast) {
-            window.$toast.error("标签名称已存在于系统标签中!");
+            window.$toast.error(t('标签名称已存在于系统标签中!'));
         }
         return;
     }
@@ -354,17 +356,17 @@ const saveTag = () => {
     // 检查是否与用户标签重名
     if (savedTags.value.some((tag) => tag.name === tagName.value.trim())) {
         if (toast) {
-            toast.error("标签名称已存在!");
+            toast.error(t('标签名称已存在!'));
         } else if (window.$toast) {
-            window.$toast.error("标签名称已存在!");
+            window.$toast.error(t('标签名称已存在!'));
         }
         return;
     }
 
     // 处理输入值，如果为空则默认为0
     nutritionValues.value.forEach((item) => {
-        if (!item.value || item.value.trim() === "") {
-            item.value = "0";
+        if (!item.value || item.value.trim() === '') {
+            item.value = '0';
         }
     });
 
@@ -373,21 +375,21 @@ const saveTag = () => {
         name: tagName.value,
         calories:
             parseFloat(
-                nutritionValues.value.find((item) => item.key === "calories")
+                nutritionValues.value.find((item) => item.key === 'calories')
                     .value
             ) || 0,
         protein:
             parseFloat(
-                nutritionValues.value.find((item) => item.key === "protein")
+                nutritionValues.value.find((item) => item.key === 'protein')
                     .value
             ) || 0,
         fat:
             parseFloat(
-                nutritionValues.value.find((item) => item.key === "fat").value
+                nutritionValues.value.find((item) => item.key === 'fat').value
             ) || 0,
         carbs:
             parseFloat(
-                nutritionValues.value.find((item) => item.key === "carbs").value
+                nutritionValues.value.find((item) => item.key === 'carbs').value
             ) || 0,
         visible: true, // 默认可见
         fixed: false, // 用户添加的标签不是固定的
@@ -404,13 +406,13 @@ const saveTag = () => {
 
     // 显示成功提示
     if (toast) {
-        toast.success("标签已保存!");
+        toast.success(t('标签已保存!'));
     } else if (window.$toast) {
-        window.$toast.success("标签已保存!");
+        window.$toast.success(t('标签已保存!'));
     }
 
     // 触发组件事件
-    emit("tag-added", newTag);
+    emit('tag-added', newTag);
 };
 
 // 编辑标签
@@ -424,13 +426,13 @@ const editTag = (tag) => {
     tagName.value = tag.name;
 
     // 填充营养值
-    nutritionValues.value.find((item) => item.key === "calories").value =
+    nutritionValues.value.find((item) => item.key === 'calories').value =
         tag.calories.toString();
-    nutritionValues.value.find((item) => item.key === "protein").value =
+    nutritionValues.value.find((item) => item.key === 'protein').value =
         tag.protein.toString();
-    nutritionValues.value.find((item) => item.key === "fat").value =
+    nutritionValues.value.find((item) => item.key === 'fat').value =
         tag.fat.toString();
-    nutritionValues.value.find((item) => item.key === "carbs").value =
+    nutritionValues.value.find((item) => item.key === 'carbs').value =
         tag.carbs.toString();
 };
 
@@ -438,9 +440,9 @@ const editTag = (tag) => {
 const updateTag = () => {
     if (!tagName.value.trim()) {
         if (toast) {
-            toast.error("请输入标签名称!");
+            toast.error(t('请输入标签名称!'));
         } else if (window.$toast) {
-            window.$toast.error("请输入标签名称!");
+            window.$toast.error(t('请输入标签名称!'));
         }
         return;
     }
@@ -450,9 +452,9 @@ const updateTag = () => {
         // 检查是否与固定标签重名
         if (fixedTags.value.some((tag) => tag.name === tagName.value.trim())) {
             if (toast) {
-                toast.error("标签名称已存在于系统标签中!");
+                toast.error(t('标签名称已存在于系统标签中!'));
             } else if (window.$toast) {
-                window.$toast.error("标签名称已存在于系统标签中!");
+                window.$toast.error(t('标签名称已存在于系统标签中!'));
             }
             return;
         }
@@ -466,9 +468,9 @@ const updateTag = () => {
             )
         ) {
             if (toast) {
-                toast.error("标签名称已存在!");
+                toast.error(t('标签名称已存在!'));
             } else if (window.$toast) {
-                window.$toast.error("标签名称已存在!");
+                window.$toast.error(t('标签名称已存在!'));
             }
             return;
         }
@@ -476,27 +478,27 @@ const updateTag = () => {
 
     // 处理输入值，如果为空则默认为0
     nutritionValues.value.forEach((item) => {
-        if (!item.value || item.value.trim() === "") {
-            item.value = "0";
+        if (!item.value || item.value.trim() === '') {
+            item.value = '0';
         }
     });
 
     // 获取更新后的营养值
     const updatedCalories =
         parseFloat(
-            nutritionValues.value.find((item) => item.key === "calories").value
+            nutritionValues.value.find((item) => item.key === 'calories').value
         ) || 0;
     const updatedProtein =
         parseFloat(
-            nutritionValues.value.find((item) => item.key === "protein").value
+            nutritionValues.value.find((item) => item.key === 'protein').value
         ) || 0;
     const updatedFat =
         parseFloat(
-            nutritionValues.value.find((item) => item.key === "fat").value
+            nutritionValues.value.find((item) => item.key === 'fat').value
         ) || 0;
     const updatedCarbs =
         parseFloat(
-            nutritionValues.value.find((item) => item.key === "carbs").value
+            nutritionValues.value.find((item) => item.key === 'carbs').value
         ) || 0;
 
     // 更新标签
@@ -512,7 +514,7 @@ const updateTag = () => {
             fixedTags.value[tagIndex].carbs = updatedCarbs;
 
             // 保存固定标签的修改
-            setData("fixedTags", fixedTags.value);
+            setData('fixedTags', fixedTags.value);
         }
     } else {
         // 更新用户标签
@@ -538,17 +540,17 @@ const updateTag = () => {
     resetForm();
     isEditing.value = false;
     editingTag.value = null;
-    originalTagName.value = "";
+    originalTagName.value = '';
 
     // 显示成功提示
     if (toast) {
-        toast.success("标签已更新!");
+        toast.success(t('标签已更新!'));
     } else if (window.$toast) {
-        window.$toast.success("标签已更新!");
+        window.$toast.success(t('标签已更新!'));
     }
 
     // 触发组件事件
-    emit("tag-updated", editingTag.value);
+    emit('tag-updated', editingTag.value);
 };
 
 // 取消编辑
@@ -557,7 +559,7 @@ const cancelEdit = () => {
         // 取消编辑，恢复表单
         isEditing.value = false;
         editingTag.value = null;
-        originalTagName.value = "";
+        originalTagName.value = '';
         resetForm();
     } else {
         // 如果不是编辑模式，则清空表单
@@ -588,11 +590,11 @@ const toggleTagVisibility = (tag) => {
 
     updateVisibleTags();
 
-    const status = tag.visible ? "隐藏" : "可见"; // 注意这里取反，因为UI会立即更新
+    const status = tag.visible ? t('隐藏') : t('可见'); // 注意这里取反，因为UI会立即更新
     if (toast) {
-        toast.success(`标签已设为${status}!`);
+        toast.success(t('标签已设为') + status + '!');
     } else if (window.$toast) {
-        window.$toast.success(`标签已设为${status}!`);
+        window.$toast.success(t('标签已设为') + status + '!');
     }
 };
 
@@ -608,9 +610,9 @@ const removeTag = (tag) => {
 
             // 显示提示
             if (toast) {
-                toast.success("标签已删除!");
+                toast.success(t('标签已删除!'));
             } else if (window.$toast) {
-                window.$toast.success("标签已删除!");
+                window.$toast.success(t('标签已删除!'));
             }
         }
     }
@@ -618,9 +620,9 @@ const removeTag = (tag) => {
 
 // 重置表单
 const resetForm = () => {
-    tagName.value = "";
+    tagName.value = '';
     nutritionValues.value.forEach((item) => {
-        item.value = "";
+        item.value = '';
     });
 };
 
@@ -642,7 +644,7 @@ onMounted(() => {
     }
 
     // 检查是否有保存的固定标签修改
-    const savedFixedTags = getData("fixedTags", null);
+    const savedFixedTags = getData('fixedTags', null);
     if (savedFixedTags) {
         // 更新固定标签的营养值
         savedFixedTags.forEach((savedTag) => {

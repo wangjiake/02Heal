@@ -1,0 +1,21 @@
+root = true
+ 
+# unix风格的换行符，每个文件都以换行符结尾
+[*]
+end_of_line = lf
+insert_final_newline = true
+ 
+# 用大括号展开符号匹配多个文件
+# 设置默认字符集
+# 设置所有以.js,.py结尾的文件的编码格式
+[*.{js,py}]
+charset = utf-8
+ 
+# 使用空格缩进，设置4个空格缩进
+[*.py]
+indent_style = space
+indent_size = 4
+ 
+# 使用制表符(tab)缩进
+[Makefile]
+indent_style = tab

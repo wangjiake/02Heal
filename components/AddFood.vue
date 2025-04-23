@@ -1,19 +1,15 @@
 <!-- components/AddFood.vue -->
 <template>
     <div class="p-4 bg-white rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">添加食物</h2>
+        <h2 class="text-xl font-bold mb-4">{{ $t("添加食物") }}</h2>
 
         <!-- 可用标签区域 -->
         <div v-if="visibleTags.length > 0" class="mb-6">
-            <h3 class="text-md font-medium mb-2">快速添加标签:</h3>
+            <h3 class="text-md font-medium mb-2">{{ $t("快速添加标签") }}:</h3>
             <div class="flex flex-wrap gap-2">
-                <button
-                    v-for="(tag, index) in visibleTags"
-                    :key="index"
-                    @click="applyTag(tag)"
-                    class="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors text-sm font-medium"
-                >
-                    {{ tag.name }}
+                <button v-for="(tag, index) in visibleTags" :key="index" @click="applyTag(tag)"
+                    class="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors text-sm font-medium">
+                    {{ $t(tag.name) }}
                 </button>
             </div>
         </div>
@@ -22,35 +18,20 @@
             <!-- 食物名称输入字段 -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                    食物名称
+                    {{ $t("食物名称") }}
                 </label>
-                <input
-                    type="text"
-                    v-model="foodName"
-                    placeholder="输入食物名称"
-                    class="block w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                />
+                <input type="text" v-model="foodName" :placeholder="$t('输入食物名称')"
+                    class="block w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" />
             </div>
 
-            <div
-                v-for="(item, index) in nutritionValues"
-                :key="index"
-                class="mb-4"
-            >
+            <div v-for="(item, index) in nutritionValues" :key="index" class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
                     {{ item.title }}
                 </label>
                 <div class="relative rounded-md shadow-sm">
-                    <input
-                        type="text"
-                        inputmode="decimal"
-                        v-model="item.value"
-                        @input="formatNumber(item)"
-                        class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    />
-                    <div
-                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
+                    <input type="text" inputmode="decimal" v-model="item.value" @input="formatNumber(item)"
+                        class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" />
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <span class="text-gray-500 sm:text-sm">
                             {{ item.key === "calories" ? "kcal" : "g" }}
                         </span>
@@ -59,61 +40,40 @@
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                <button
-                    type="submit"
-                    class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                >
-                    添加食物
+                <button type="submit"
+                    class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    {{ $t("添加食物") }}
                 </button>
-                <button
-                    type="button"
-                    @click="resetForm"
-                    class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                >
-                    清空表单
+                <button type="button" @click="resetForm"
+                    class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                    {{ $t("清空表单") }}
                 </button>
             </div>
         </form>
 
         <div v-if="todayFoods.length > 0" class="mt-8">
-            <h3 class="text-lg font-bold mb-3">今日添加的食物</h3>
+            <h3 class="text-lg font-bold mb-3">{{ $t("今日添加的食物") }}</h3>
             <ul class="divide-y divide-gray-200">
-                <li
-                    v-for="(food, index) in todayFoods"
-                    :key="index"
-                    class="py-3 flex justify-between items-center gap-4"
-                >
+                <li v-for="(food, index) in todayFoods" :key="index"
+                    class="py-3 flex justify-between items-center gap-4">
                     <div class="flex-1">
                         <p class="font-medium">
-                            {{ food.name || "未命名食物" }}
+                            {{ food.name || $t("未命名食物") }}
                         </p>
                         <p class="text-sm text-gray-500 break-words">
-                            卡路里: {{ formatDisplayNumber(food.calories) }}kcal
-                            | 蛋白质: {{ formatDisplayNumber(food.protein) }}g |
-                            脂肪: {{ formatDisplayNumber(food.fat) }}g | 碳水:
-                            {{ formatDisplayNumber(food.carbs) }}g
+                            {{ $t("卡路里") }}: {{ formatDisplayNumber(food.calories) }}kcal |
+                            {{ $t("蛋白质") }}: {{ formatDisplayNumber(food.protein) }}g |
+                            {{ $t("脂肪") }}: {{ formatDisplayNumber(food.fat) }}g |
+                            {{ $t("碳水") }}: {{ formatDisplayNumber(food.carbs) }}g
                         </p>
                     </div>
-                    <button
-                        @click="removeFood(index)"
+                    <button @click="removeFood(index)"
                         class="text-red-500 hover:text-red-700 focus:outline-none p-1 flex-shrink-0"
-                        aria-label="删除"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
+                        :aria-label="$t('删除')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 6h18"></path>
-                            <path
-                                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
-                            ></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
                             <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
                         </svg>
                     </button>
@@ -121,11 +81,11 @@
             </ul>
             <div class="mt-4 pt-4 border-t border-gray-200">
                 <p class="font-bold">
-                    今日总计:
-                    {{ formatDisplayNumber(dailyTotals.calories) }}kcal, 蛋白质:
-                    {{ formatDisplayNumber(dailyTotals.protein) }}g, 脂肪:
-                    {{ formatDisplayNumber(dailyTotals.fat) }}g, 碳水:
-                    {{ formatDisplayNumber(dailyTotals.carbs) }}g
+                    {{ $t("今日总计") }}:
+                    {{ formatDisplayNumber(dailyTotals.calories) }}kcal,
+                    {{ $t("蛋白质") }}: {{ formatDisplayNumber(dailyTotals.protein) }}g,
+                    {{ $t("脂肪") }}: {{ formatDisplayNumber(dailyTotals.fat) }}g,
+                    {{ $t("碳水") }}: {{ formatDisplayNumber(dailyTotals.carbs) }}g
                 </p>
             </div>
         </div>
@@ -142,7 +102,9 @@ import {
     updateRemainingNutrition,
     checkForDailyReset,
 } from "../utils/storage";
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 // 尝试注入 toast 服务
 const toast = inject("toast", null);
 
@@ -151,10 +113,10 @@ const foodName = ref("");
 
 // 响应式数据
 const nutritionValues = ref([
-    { title: "卡路里", value: "", color: "bg-orange-500", key: "calories" },
-    { title: "蛋白质 (g)", value: "", color: "bg-green-500", key: "protein" },
-    { title: "脂肪 (g)", value: "", color: "bg-yellow-400", key: "fat" },
-    { title: "碳水 (g)", value: "", color: "bg-blue-400", key: "carbs" },
+    { title: t('卡路里'), value: "", color: "bg-orange-500", key: "calories" },
+    { title: t('蛋白质') + "(g)", value: "", color: "bg-green-500", key: "protein" },
+    { title: t('脂肪') + "(g)" , value: "", color: "bg-yellow-400", key: "fat" },
+    { title: t('碳水') + "(g)", value: "", color: "bg-blue-400", key: "carbs" },
 ]);
 const todayFoods = ref([]);
 const visibleTags = ref([]);
@@ -180,9 +142,7 @@ const dailyTotals = computed(() => {
                 protein: formatCalculationNumber(
                     totals.protein + parseFloat(food.protein || 0)
                 ),
-                fat: formatCalculationNumber(
-                    totals.fat + parseFloat(food.fat || 0)
-                ),
+                fat: formatCalculationNumber(totals.fat + parseFloat(food.fat || 0)),
                 carbs: formatCalculationNumber(
                     totals.carbs + parseFloat(food.carbs || 0)
                 ),
@@ -248,9 +208,9 @@ const applyTag = (tag) => {
 
     // 显示提示
     if (toast) {
-        toast.success(`已添加 "${tag.name}"!`);
+        toast.success(t('已添加')+(` "${tag.name}"!`));
     } else if (window.$toast) {
-        window.$toast.success(`已添加 "${tag.name}"!`);
+        window.$toast.success(t('已添加')+(` "${tag.name}"!`));
     }
 
     // 触发组件事件
@@ -275,7 +235,7 @@ const addFood = (event = null) => {
     });
 
     // 获取食物名称（使用用户输入的名称，如果为空则使用默认值）
-    const name = foodName.value || "未命名食物";
+    const name = foodName.value || t('未命名食物');
 
     // 准备食物数据（确保所有营养值保留2位小数）
     const newFood = {
@@ -305,9 +265,9 @@ const addFood = (event = null) => {
 
     // 显示成功提示
     if (toast) {
-        toast.success("食物已添加!");
+        toast.success(t('食物已添加!'));
     } else if (window.$toast) {
-        window.$toast.success("食物已添加!");
+        window.$toast.success(t('食物已添加!'));
     }
 
     // 触发组件事件
@@ -322,9 +282,9 @@ const removeFood = (index) => {
 
     // 显示提示
     if (toast) {
-        toast.success("食物已删除!");
+        toast.success(t('食物已删除!'));
     } else if (window.$toast) {
-        window.$toast.success("食物已删除!");
+        window.$toast.success(t('食物已删除!'));
     }
 };
 

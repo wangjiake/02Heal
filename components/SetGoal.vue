@@ -1,13 +1,12 @@
-```vue
 <!-- components/SetGoal.vue -->
 <template>
     <div class="p-4 bg-white rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">运动日和非运动日目标</h2>
+        <h2 class="text-xl font-bold mb-4">{{ $t("运动日和非运动日目标") }}</h2>
 
         <!-- 目标列表选择 -->
         <div class="mb-6">
             <div class="flex items-center justify-between mb-2">
-                <h3 class="text-lg font-medium">目标列表</h3>
+                <h3 class="text-lg font-medium">{{ $t("目标列表") }}</h3>
                 <button
                     @click="
                         showCreateForm = true;
@@ -16,7 +15,7 @@
                     "
                     class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
                 >
-                    新建目标
+                    {{ $t("新建目标") }}
                 </button>
             </div>
 
@@ -37,9 +36,9 @@
                     >
                         <div class="font-medium">{{ goalSet.name }}</div>
                         <div class="text-xs text-gray-500">
-                            卡路里: {{ getGoalValue(goalSet, "calories") }} kcal
-                            | 蛋白质: {{ getGoalValue(goalSet, "protein") }}g |
-                            脂肪: {{ getGoalValue(goalSet, "fat") }}g | 碳水:
+                            {{ $t("卡路里") }}: {{ getGoalValue(goalSet, "calories") }} kcal
+                            | {{ $t("蛋白质") }}: {{ getGoalValue(goalSet, "protein") }}g |
+                            {{ $t("脂肪") }}: {{ getGoalValue(goalSet, "fat") }}g | {{ $t("碳水") }}:
                             {{ getGoalValue(goalSet, "carbs") }}g
                         </div>
                     </div>
@@ -87,7 +86,7 @@
                 </div>
             </div>
             <div v-else class="text-gray-500 text-center py-4">
-                没有保存的目标，请创建新目标
+                {{ $t("没有保存的目标，请创建新目标") }}
             </div>
         </div>
 
@@ -95,7 +94,7 @@
         <div v-if="showCreateForm" class="border-t pt-4 mt-4">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium">
-                    {{ editingIndex !== null ? "编辑目标" : "创建新目标" }}
+                    {{ editingIndex !== null ? $t("编辑目标") : $t("创建新目标") }}
                 </h3>
                 <button
                     @click="showCreateForm = false"
@@ -122,13 +121,13 @@
                 <!-- 目标名称 -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                        目标名称
+                        {{ $t("目标名称") }}
                     </label>
                     <input
                         type="text"
                         v-model="goalForm.name"
                         class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="例如: 减脂目标, 增肌目标"
+                        :placeholder="$t('例如: 减脂目标, 增肌目标')"
                         required
                     />
                 </div>
@@ -165,14 +164,14 @@
                         type="submit"
                         class="w-full sm:w-auto px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
-                        {{ editingIndex !== null ? "更新目标" : "保存新目标" }}
+                        {{ editingIndex !== null ? $t("更新目标") : $t("保存新目标") }}
                     </button>
                     <button
                         type="button"
                         @click="resetToDefault"
                         class="w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                     >
-                        重置为默认值
+                        {{ $t("重置为默认值") }}
                     </button>
                 </div>
             </form>
@@ -181,7 +180,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from "vue";
+import { ref, onMounted, inject } from 'vue';
 // 导入存储服务
 import {
     getNutritionGoals,
@@ -196,22 +195,24 @@ import {
     updateGoalSet,
     deleteGoalSet,
     applyGoalSet,
-} from "../utils/storage";
+} from '../utils/storage';
+import { useI18n } from "vue-i18n";
 
+const { t } = useI18n();
 // 尝试注入 toast 服务
-const toast = inject("toast", null);
+const toast = inject('toast', null);
 
 // 默认营养目标数据
 const defaultNutritionGoals = [
-    { title: "卡路里", value: "1653", color: "bg-orange-500", key: "calories" },
+    { title: t('卡路里'), value: '1653', color: 'bg-orange-500', key: 'calories' },
     {
-        title: "蛋白质 (g)",
-        value: "130.0",
-        color: "bg-green-500",
-        key: "protein",
+        title: t('蛋白质') + ' (g)',
+        value: '130.0',
+        color: 'bg-green-500',
+        key: 'protein',
     },
-    { title: "脂肪 (g)", value: "45.0", color: "bg-yellow-400", key: "fat" },
-    { title: "碳水 (g)", value: "182.0", color: "bg-blue-400", key: "carbs" },
+    { title: t('脂肪') + ' (g)', value: '45.0', color: 'bg-yellow-400', key: 'fat' },
+    { title: t('碳水') + ' (g)', value: '182.0', color: 'bg-blue-400', key: 'carbs' },
 ];
 
 // 响应式数据
@@ -222,34 +223,34 @@ const editingIndex = ref(null);
 
 // 表单数据
 const goalForm = ref({
-    name: "",
+    name: '',
     goals: [...defaultNutritionGoals],
 });
 
 // 定义emit事件
-const emit = defineEmits(["goals-updated"]);
+const emit = defineEmits(['goals-updated']);
 
 // 辅助函数：从目标集中获取指定键的值
 const getGoalValue = (goalSet, key) => {
     const goal = goalSet.goals.find((g) => g.key === key);
-    return goal ? parseFloat(goal.value).toFixed(1) : "0.0";
+    return goal ? parseFloat(goal.value).toFixed(1) : '0.0';
 };
 
 // 格式化数字，确保输入有效
 const formatNumber = (item) => {
     // 如果不是数字格式，转换为有效数字或清空
     if (item.value && isNaN(parseFloat(item.value))) {
-        item.value = "";
+        item.value = '';
     }
 
     // 移除非数字和非小数点字符
     if (item.value) {
-        item.value = item.value.replace(/[^\d.]/g, "");
+        item.value = item.value.replace(/[^\d.]/g, '');
 
         // 确保只有一个小数点
-        const parts = item.value.split(".");
+        const parts = item.value.split('.');
         if (parts.length > 2) {
-            item.value = parts[0] + "." + parts.slice(1).join("");
+            item.value = parts[0] + '.' + parts.slice(1).join('');
         }
     }
 };
@@ -257,7 +258,7 @@ const formatNumber = (item) => {
 // 重置表单为默认值
 const resetGoalForm = () => {
     goalForm.value = {
-        name: "",
+        name: '',
         goals: JSON.parse(JSON.stringify(defaultNutritionGoals)),
     };
 };
@@ -279,13 +280,13 @@ const selectGoalSet = (id) => {
 
     // 显示提示
     if (toast) {
-        toast.success("已切换目标集，并更新了今日剩余目标!");
+        toast.success(t('已切换目标集，并更新了今日剩余目标!'));
     } else if (window.$toast) {
-        window.$toast.success("已切换目标集，并更新了今日剩余目标!");
+        window.$toast.success(t('已切换目标集，并更新了今日剩余目标!'));
     }
 
     // 触发组件事件
-    emit("goals-updated");
+    emit('goals-updated');
 };
 
 // 编辑目标集
@@ -307,9 +308,9 @@ const confirmDeleteGoalSet = (id) => {
     // 如果只有一个目标集，不允许删除
     if (goalsList.value.length <= 1) {
         if (toast) {
-            toast.error("至少需要保留一个目标集!");
+            toast.error(t('至少需要保留一个目标集!'));
         } else if (window.$toast) {
-            window.$toast.error("至少需要保留一个目标集!");
+            window.$toast.error(t('至少需要保留一个目标集!'));
         }
         return;
     }
@@ -323,13 +324,13 @@ const confirmDeleteGoalSet = (id) => {
 
     // 显示提示
     if (toast) {
-        toast.success("目标集已删除!");
+        toast.success(t('目标集已删除!'));
     } else if (window.$toast) {
-        window.$toast.success("目标集已删除!");
+        window.$toast.success(t('目标集已删除!'));
     }
 
     // 触发组件事件
-    emit("goals-updated");
+    emit('goals-updated');
 };
 
 // 保存目标集
@@ -345,9 +346,9 @@ const saveGoalSet = () => {
     if (!allValid) {
         // 显示错误提示
         if (toast) {
-            toast.error("请输入有效的数字!");
+            toast.error(t('请输入有效的数字!'));
         } else if (window.$toast) {
-            window.$toast.error("请输入有效的数字!");
+            window.$toast.error(t('请输入有效的数字!'));
         }
         return;
     }
@@ -385,19 +386,19 @@ const saveGoalSet = () => {
         if (toast) {
             toast.success(
                 editingIndex.value !== null
-                    ? "目标集已更新!"
-                    : "新目标集已创建!"
+                    ? t('目标集已更新!')
+                    : t('新目标集已创建!')
             );
         } else if (window.$toast) {
             window.$toast.success(
                 editingIndex.value !== null
-                    ? "目标集已更新!"
-                    : "新目标集已创建!"
+                    ? t('目标集已更新!')
+                    : t('新目标集已创建!')
             );
         }
 
         // 触发组件事件
-        emit("goals-updated");
+        emit('goals-updated');
     }
 };
 
@@ -408,7 +409,7 @@ onMounted(() => {
 
     // 如果没有保存的目标集，创建一个默认的
     if (!savedGoalsList || savedGoalsList.length === 0) {
-        const defaultId = addGoalSet("默认目标", defaultNutritionGoals);
+        const defaultId = addGoalSet(t('默认目标'), defaultNutritionGoals);
         if (defaultId) {
             setActiveGoalSetId(defaultId);
             savedGoalsList = getNutritionGoalsList();
@@ -427,4 +428,3 @@ onMounted(() => {
     }
 });
 </script>
-```
