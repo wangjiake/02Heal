@@ -266,6 +266,165 @@ export const getLastResetDate = () => {
 export const setLastResetDate = (dateString) => {
     return setData("lastGoalResetDate", dateString);
 };
+export const getNutritionGoalsList = () => {
+    return getData("nutritionGoalsList", []);
+};
+
+// Save a list of goal sets
+export const saveNutritionGoalsList = (goalsList) => {
+    return setData("nutritionGoalsList", goalsList);
+};
+
+// Get the currently active goal set ID
+export const getActiveGoalSetId = () => {
+    return getData("activeGoalSetId", null);
+};
+
+// Set the active goal set ID
+export const setActiveGoalSetId = (goalSetId) => {
+    const result = setData("activeGoalSetId", goalSetId);
+    if (result) {
+        // Apply the selected goal set
+        applyGoalSet(goalSetId);
+        dispatchEvent("activeGoalSetChanged");
+    }
+    return result;
+};
+
+// Apply a specific goal set as the current nutrition goals
+export const applyGoalSet = (goalSetId) => {
+    const goalsList = getNutritionGoalsList();
+    if (!goalsList || goalsList.length === 0) return false;
+
+    const goalSet = goalsList.find(set => set.id === goalSetId);
+    if (!goalSet) return false;
+
+    // Set this goal set as the current nutrition goals and original goals
+    setNutritionGoals(goalSet.goals);
+    setOriginalNutritionGoals(goalSet.goals);
+
+    // Calculate today's consumed nutrition and update remaining goals
+    const todayFoods = getTodayFoods();
+    if (todayFoods && todayFoods.length > 0) {
+        // Calculate the daily totals from the foods
+        const dailyTotals = todayFoods.reduce(
+            (totals, food) => {
+                return {
+                    calories: formatToTwoDecimals(totals.calories + parseFloat(food.calories || 0)),
+                    protein: formatToTwoDecimals(totals.protein + parseFloat(food.protein || 0)),
+                    fat: formatToTwoDecimals(totals.fat + parseFloat(food.fat || 0)),
+                    carbs: formatToTwoDecimals(totals.carbs + parseFloat(food.carbs || 0))
+                };
+            },
+            { calories: 0, protein: 0, fat: 0, carbs: 0 }
+        );
+
+        // Update the remaining goals based on today's consumption
+        updateRemainingNutrition(dailyTotals);
+    } else {
+        // No foods consumed today, just trigger the update event
+        dispatchEvent("nutritionGoalsUpdated");
+    }
+
+    return true;
+};
+
+// Add a new goal set to the list
+export const addGoalSet = (name, goals) => {
+    const goalsList = getNutritionGoalsList();
+
+    // Generate a unique ID
+    const id = `goal_${Date.now()}`;
+
+    // Format goals to ensure proper decimal values
+    const formattedGoals = goals.map(goal => ({
+        ...goal,
+        value: parseFloat(parseFloat(goal.value).toFixed(2))
+    }));
+
+    // Create the new goal set
+    const newGoalSet = {
+        id,
+        name,
+        goals: formattedGoals,
+        createdAt: new Date().toISOString()
+    };
+
+    // Add to the list
+    const updatedList = [...goalsList, newGoalSet];
+    const result = saveNutritionGoalsList(updatedList);
+
+    if (result) {
+        dispatchEvent("nutritionGoalsListUpdated");
+    }
+
+    return result ? id : null;
+};
+
+// Update an existing goal set
+export const updateGoalSet = (id, name, goals) => {
+    const goalsList = getNutritionGoalsList();
+
+    // Find the index of the goal set to update
+    const index = goalsList.findIndex(set => set.id === id);
+    if (index === -1) return false;
+
+    // Format goals to ensure proper decimal values
+    const formattedGoals = goals.map(goal => ({
+        ...goal,
+        value: parseFloat(parseFloat(goal.value).toFixed(2))
+    }));
+
+    // Update the goal set
+    goalsList[index] = {
+        ...goalsList[index],
+        name,
+        goals: formattedGoals,
+        updatedAt: new Date().toISOString()
+    };
+
+    const result = saveNutritionGoalsList(goalsList);
+
+    if (result) {
+        // If this was the active goal set, reapply it
+        const activeId = getActiveGoalSetId();
+        if (activeId === id) {
+            applyGoalSet(id);
+        }
+
+        dispatchEvent("nutritionGoalsListUpdated");
+    }
+
+    return result;
+};
+
+// Delete a goal set
+export const deleteGoalSet = (id) => {
+    const goalsList = getNutritionGoalsList();
+
+    // Filter out the goal set to delete
+    const updatedList = goalsList.filter(set => set.id !== id);
+
+    // If we're deleting the active goal set, we need to set a new active one
+    const activeId = getActiveGoalSetId();
+    let needToSetNewActive = activeId === id;
+
+    const result = saveNutritionGoalsList(updatedList);
+
+    if (result) {
+        // If we deleted the active goal set, set a new one as active if possible
+        if (needToSetNewActive && updatedList.length > 0) {
+            setActiveGoalSetId(updatedList[0].id);
+        } else if (needToSetNewActive) {
+            // No goal sets left, clear the active ID
+            setActiveGoalSetId(null);
+        }
+
+        dispatchEvent("nutritionGoalsListUpdated");
+    }
+
+    return result;
+};
 
 // 检查是否需要重置每日目标，考虑凌晨特殊情况
 export const checkForDailyReset = () => {
@@ -299,16 +458,23 @@ export const checkForDailyReset = () => {
 export const resetDailyGoals = () => {
     if (!isClient()) return false;
 
-    // 检查是否有原始目标保存
-    const originalGoals = getOriginalNutritionGoals();
-    if (originalGoals && originalGoals.length > 0) {
-        // 恢复原始目标
-        setNutritionGoals(originalGoals);
+    // 获取当前活动的目标集
+    const activeGoalSetId = getActiveGoalSetId();
+    if (activeGoalSetId) {
+        // 重新应用当前活动的目标集
+        applyGoalSet(activeGoalSetId);
     } else {
-        // 如果没有保存原始目标，则获取当前目标并保存为原始目标
-        const currentGoals = getNutritionGoals();
-        if (currentGoals && currentGoals.length > 0) {
-            setOriginalNutritionGoals(currentGoals);
+        // 如果没有活动目标集，检查是否有原始目标保存
+        const originalGoals = getOriginalNutritionGoals();
+        if (originalGoals && originalGoals.length > 0) {
+            // 恢复原始目标
+            setNutritionGoals(originalGoals);
+        } else {
+            // 如果没有保存原始目标，则获取当前目标并保存为原始目标
+            const currentGoals = getNutritionGoals();
+            if (currentGoals && currentGoals.length > 0) {
+                setOriginalNutritionGoals(currentGoals);
+            }
         }
     }
 

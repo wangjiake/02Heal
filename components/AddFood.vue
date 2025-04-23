@@ -81,13 +81,13 @@
                 <li
                     v-for="(food, index) in todayFoods"
                     :key="index"
-                    class="py-3 flex justify-between items-center"
+                    class="py-3 flex justify-between items-center gap-4"
                 >
-                    <div>
+                    <div class="flex-1">
                         <p class="font-medium">
                             {{ food.name || "未命名食物" }}
                         </p>
-                        <p class="text-sm text-gray-500">
+                        <p class="text-sm text-gray-500 break-words">
                             卡路里: {{ formatDisplayNumber(food.calories) }}kcal
                             | 蛋白质: {{ formatDisplayNumber(food.protein) }}g |
                             脂肪: {{ formatDisplayNumber(food.fat) }}g | 碳水:
@@ -96,9 +96,26 @@
                     </div>
                     <button
                         @click="removeFood(index)"
-                        class="text-red-500 hover:text-red-700 focus:outline-none"
+                        class="text-red-500 hover:text-red-700 focus:outline-none p-1 flex-shrink-0"
+                        aria-label="删除"
                     >
-                        删除
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M3 6h18"></path>
+                            <path
+                                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+                            ></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                        </svg>
                     </button>
                 </li>
             </ul>

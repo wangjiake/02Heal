@@ -2,7 +2,7 @@
 <template>
     <div class="p-4 bg-white rounded-lg shadow">
         <h2 class="text-xl font-bold mb-4">
-            {{ isEditing ? "编辑标签" : "标签管理" }}
+            {{ isEditing ? "编辑标签" : "快速添加标签管理" }}
         </h2>
 
         <form

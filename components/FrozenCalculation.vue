@@ -5,26 +5,144 @@
 
         <!-- 保存的配置下拉列表 -->
         <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label
+                id="saved-config-label"
+                class="block text-sm font-medium text-gray-700 mb-1"
+            >
                 选择保存的配置
             </label>
             <div class="flex gap-3">
-                <select
-                    v-model="selectedConfigId"
-                    @change="applySelectedConfig"
-                    class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg h-[54px]"
-                    style="height: 54px"
-                >
-                    <option value="">-- 选择配置 --</option>
-                    <option
-                        v-for="config in savedConfigurations"
-                        :key="config.id"
-                        :value="config.id"
-                        class="py-2"
+                <div class="relative w-full">
+                    <button
+                        type="button"
+                        @click="toggleDropdown"
+                        class="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-3 pl-3 text-left text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg h-[54px]"
+                        aria-haspopup="listbox"
+                        :aria-expanded="isOpen ? 'true' : 'false'"
+                        aria-labelledby="saved-config-label"
                     >
-                        {{ config.name }}
-                    </option>
-                </select>
+                        <span
+                            class="col-start-1 row-start-1 flex items-center pr-6 truncate"
+                        >
+                            <span class="block truncate">{{
+                                selectedConfigName || "-- 选择配置 --"
+                            }}</span>
+                        </span>
+                        <svg
+                            class="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-500 mr-2"
+                            viewBox="0 0 16 16"
+                            fill="currentColor"
+                            aria-hidden="true"
+                            data-slot="icon"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M5.22 10.22a.75.75 0 0 1 1.06 0L8 11.94l1.72-1.72a.75.75 0 1 1 1.06 1.06l-2.25 2.25a.75.75 0 0 1-1.06 0l-2.25-2.25a.75.75 0 0 1 0-1.06ZM10.78 5.78a.75.75 0 0 1-1.06 0L8 4.06 6.28 5.78a.75.75 0 0 1-1.06-1.06l2.25-2.25a.75.75 0 0 1 1.06 0l2.25 2.25a.75.75 0 0 1 0 1.06Z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                    </button>
+
+                    <!-- 下拉菜单 -->
+                    <ul
+                        v-if="isOpen"
+                        class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-hidden sm:text-sm"
+                        tabindex="-1"
+                        role="listbox"
+                        aria-labelledby="saved-config-label"
+                        :aria-activedescendant="
+                            selectedConfigId
+                                ? `config-option-${selectedConfigId}`
+                                : ''
+                        "
+                    >
+                        <!-- 空选项 -->
+                        <li
+                            class="relative cursor-default py-2 pl-3 pr-9 text-gray-900 select-none hover:bg-indigo-600 hover:text-white"
+                            id="config-option-empty"
+                            role="option"
+                            @click="selectConfig('', '')"
+                            :class="{
+                                'bg-indigo-600 text-white':
+                                    selectedConfigId === '',
+                            }"
+                        >
+                            <div class="flex items-center">
+                                <span class="block truncate font-normal"
+                                    >-- 选择配置 --</span
+                                >
+                            </div>
+                            <span
+                                v-if="selectedConfigId === ''"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-white"
+                            >
+                                <svg
+                                    class="size-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                    data-slot="icon"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </span>
+                        </li>
+
+                        <!-- 配置选项 -->
+                        <li
+                            v-for="config in savedConfigurations"
+                            :key="config.id"
+                            class="relative cursor-default py-2 pl-3 pr-9 text-gray-900 select-none hover:bg-indigo-600 hover:text-white"
+                            :id="`config-option-${config.id}`"
+                            role="option"
+                            @click="selectConfig(config.id, config.name)"
+                            :class="{
+                                'bg-indigo-600 text-white':
+                                    selectedConfigId === config.id,
+                            }"
+                        >
+                            <div class="flex items-center">
+                                <span
+                                    class="block truncate"
+                                    :class="
+                                        selectedConfigId === config.id
+                                            ? 'font-semibold'
+                                            : 'font-normal'
+                                    "
+                                >
+                                    {{ config.name }}
+                                </span>
+                            </div>
+                            <span
+                                v-if="selectedConfigId === config.id"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4"
+                                :class="
+                                    selectedConfigId === config.id
+                                        ? 'text-white'
+                                        : 'text-indigo-600'
+                                "
+                            >
+                                <svg
+                                    class="size-5"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                    data-slot="icon"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
                 <button
                     v-if="selectedConfigId"
                     @click="deleteConfiguration"
@@ -183,7 +301,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from "vue";
+import { ref, computed, onMounted, inject, watch } from "vue";
 import {
     getTodayFoods,
     formatToTwoDecimals,
@@ -203,7 +321,9 @@ const foodName = ref("");
 const weight = ref("");
 const lossRate = ref("30"); // 默认损失率为30%
 const selectedConfigId = ref("");
+const selectedConfigName = ref("");
 const savedConfigurations = ref([]);
+const isOpen = ref(false);
 
 // 营养值输入
 const nutritionValues = ref([
@@ -225,6 +345,30 @@ const nutritionValues = ref([
 
 // 定义emit事件
 const emit = defineEmits(["food-added"]);
+
+// 切换下拉菜单
+const toggleDropdown = () => {
+    isOpen.value = !isOpen.value;
+};
+
+// 选择配置
+const selectConfig = (id, name) => {
+    selectedConfigId.value = id;
+    selectedConfigName.value = name;
+    isOpen.value = false;
+
+    if (id) {
+        applySelectedConfig();
+    }
+};
+
+// 点击外部关闭下拉菜单
+const handleClickOutside = (event) => {
+    const dropdownEl = document.querySelector(".relative");
+    if (dropdownEl && !dropdownEl.contains(event.target)) {
+        isOpen.value = false;
+    }
+};
 
 // 加载保存的配置
 const loadSavedConfigurations = () => {
@@ -304,6 +448,7 @@ const saveConfiguration = () => {
     // 更新本地状态
     savedConfigurations.value = configs;
     selectedConfigId.value = newConfig.id;
+    selectedConfigName.value = newConfig.name;
 
     // 显示提示
     showToast(`配置已保存: ${newConfig.name}`);
@@ -323,6 +468,7 @@ const deleteConfiguration = () => {
     // 更新本地状态
     savedConfigurations.value = updatedConfigs;
     selectedConfigId.value = "";
+    selectedConfigName.value = "";
 
     // 显示提示
     showToast("配置已删除");
@@ -469,6 +615,7 @@ const resetForm = () => {
     weight.value = "";
     lossRate.value = "30"; // 重置为默认值
     selectedConfigId.value = "";
+    selectedConfigName.value = "";
 
     // 重置营养值
     nutritionValues.value.forEach((item) => {
@@ -497,5 +644,25 @@ const showToast = (message, type = "success") => {
 onMounted(() => {
     // 加载保存的配置
     loadSavedConfigurations();
+
+    // 添加点击外部关闭下拉菜单的事件监听
+    document.addEventListener("click", handleClickOutside);
+});
+
+// 在组件卸载前移除事件监听
+onUnmounted(() => {
+    document.removeEventListener("click", handleClickOutside);
+});
+
+// 初始化 selectedConfigName
+watch(selectedConfigId, (newId) => {
+    if (newId) {
+        const config = savedConfigurations.value.find((c) => c.id === newId);
+        if (config) {
+            selectedConfigName.value = config.name;
+        }
+    } else {
+        selectedConfigName.value = "";
+    }
 });
 </script>
