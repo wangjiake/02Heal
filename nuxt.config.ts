@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const timestamp = new Date().getTime()
+
 export default defineNuxtConfig({
     devtools: { enabled: true },
 
@@ -16,6 +18,7 @@ export default defineNuxtConfig({
     ],
 
     compatibilityDate: "2025-04-21",
+
     app: {
         head: {
             title: "减脂计算",
@@ -30,42 +33,28 @@ export default defineNuxtConfig({
             ],
         },
     },
+
     // 开发服务器配置
     devServer: {
-        port: 7812, // 服务器端口
-        host: "0.0.0.0", // This allows access from any IP
+        port: 7812,
+        host: "0.0.0.0",
     },
-    // 确保静态资源有正确的缓存头
-    nitro: {
-        esbuild: {
-            options: {
-                define: {
-                    "process.env.BUILD_TIME": JSON.stringify(
-                        new Date().toISOString()
-                    ),
-                },
-            },
-        },
-    },
-    // 配置文件生成策略
+
+    // 重点：vite 构建配置
     vite: {
         build: {
             rollupOptions: {
                 output: {
-                    // 为文件名添加时间戳，但不改变目录结构
-                    entryFileNames: `entry.[hash].${Date.now()}.js`,
-                    chunkFileNames: `chunk.[hash].${Date.now()}.js`,
-                    assetFileNames: (info) => {
-                        const timestamp = Date.now();
-                        // 安全地检查文件名
-                        const fileName = info?.name || "";
-                        if (fileName.endsWith(".css")) {
-                            return `styles.[hash].${timestamp}.css`;
+                    entryFileNames: `assets/[name].${timestamp}.js`,
+                    chunkFileNames: `assets/[name].${timestamp}.js`,
+                    assetFileNames: (assetInfo) => {
+                        if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+                            return `assets/[name].${timestamp}[extname]`
                         }
-                        return `assets/[name].[hash].${timestamp}.[ext]`;
+                        return `assets/[name].[ext]`
                     },
                 },
             },
         },
     },
-});
+})
