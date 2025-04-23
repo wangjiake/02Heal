@@ -401,7 +401,7 @@ const groupedRecords = computed(() => {
 
 // 时间段总计
 const periodTotals = computed(() => {
-    return currentRecords.value.reduce(
+    const totals = currentRecords.value.reduce(
         (totals, record) => {
             return {
                 calories: totals.calories + parseFloat(record.calories || 0),
@@ -412,6 +412,14 @@ const periodTotals = computed(() => {
         },
         { calories: 0, protein: 0, fat: 0, carbs: 0 }
     );
+    
+    // Format with two decimal places
+    return {
+        calories: totals.calories.toFixed(2),
+        protein: totals.protein.toFixed(2),
+        fat: totals.fat.toFixed(2),
+        carbs: totals.carbs.toFixed(2),
+    };
 });
 
 // 编辑记录
