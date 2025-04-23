@@ -210,8 +210,8 @@ const defaultNutritionGoals = [
         color: "bg-green-500",
         key: "protein",
     },
-    { title: "脂肪 (g)", value: "36.0", color: "bg-yellow-400", key: "fat" },
-    { title: "碳水 (g)", value: "150.0", color: "bg-blue-400", key: "carbs" },
+    { title: "脂肪 (g)", value: "45.0", color: "bg-yellow-400", key: "fat" },
+    { title: "碳水 (g)", value: "182.0", color: "bg-blue-400", key: "carbs" },
 ];
 
 // 响应式数据
