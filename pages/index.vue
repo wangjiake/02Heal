@@ -3,7 +3,7 @@
     <div class="p-4">
         <div class="flex justify-end gap-2 mb-4">
             <button v-for="locale in locales" :key="locale.code" :class="[
-                locale.code === currentLocale
+                locale.code === currentLocale.value
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-black border border-gray-300',
                 'rounded-lg px-2 py-1 text-xs sm:text-sm hover:bg-gray-100 transition',
@@ -59,12 +59,15 @@ const locales = [
     { code: 'ja', label: '日本語' },
 ];
 
-const currentLocale = locale;
+// 使用ref跟踪当前语言
+const currentLocale = ref(locale.value);
 
 // 切换语言并保留当前路径
 const switchLocale = async (newLocale) => {
-    if (newLocale === locale.value) return;
-
+    if (newLocale === currentLocale.value) return;
+    
+    currentLocale.value = newLocale; // 立即更新UI状态
+    
     const switchLocalePath = useSwitchLocalePath();
     const newPath = switchLocalePath(newLocale);
     await router.push(newPath);
@@ -117,3 +120,23 @@ const tabs = [
 // 当前激活的标签
 const activeTab = ref(0);
 </script>
+
+<style scoped>
+/* 覆盖按钮的focus状态 */
+button:focus {
+  outline: none;
+}
+
+/* 如果需要，可以添加更具体的选择器来覆盖激活状态 */
+button.bg-blue-600:active, 
+button.bg-blue-600:focus {
+  background-color: rgb(37, 99, 235) !important;
+  color: white !important;
+}
+
+button.bg-white:active,
+button.bg-white:focus {
+  background-color: white !important;
+  color: black !important;
+}
+</style>
