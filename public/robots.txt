@@ -1,0 +1,9 @@
+# robots.txt for https://fatloss.cc/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://fatloss.cc/sitemap.xml
+
+Allow: /zh_CN
+Allow: /ja

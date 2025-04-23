@@ -11,7 +11,7 @@ export default defineNuxtConfig({
 			injectPosition: 0,
 			viewer: true,
 		},
-	], "@nuxtjs/i18n", "@nuxtjs/seo"],
+	], "@nuxtjs/i18n"],
 
 	compatibilityDate: "2025-04-21",
 
@@ -33,27 +33,6 @@ export default defineNuxtConfig({
 		},
 	},
 
-	// 站点配置
-	site: {
-		url: 'https://fatloss.cc',
-		name: '减脂计算器',
-	},
-
-	// Schema.org 配置
-	schemaOrg: {
-		identity: 'Organization',
-	},
-
-	// SEO 配置
-	seo: {
-		meta: {
-			description: '专业的减脂计算工具，帮助您科学控制热量摄入，追踪健康饮食计划。',
-			themeColor: [
-				{ content: '#18181b', media: '(prefers-color-scheme: dark)' },
-				{ content: 'white', media: '(prefers-color-scheme: light)' },
-			],
-		},
-	},
 
 	// i18n 配置
 	i18n: {
