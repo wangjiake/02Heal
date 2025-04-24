@@ -584,7 +584,7 @@ export const calculateFinalNutrition = (nutritionPer100g, originalWeight, finalW
 export const addFrozenFood = (foodName, finalWeight, finalNutrition) => {
     // 准备食物数据
     const newFood = {
-        name: `${foodName} (冷冻${finalWeight}g)`,
+        name: `${foodName} (${finalWeight}g)`,
         calories: finalNutrition.calories,
         protein: finalNutrition.protein,
         fat: finalNutrition.fat,
