@@ -206,13 +206,13 @@ const toast = inject('toast', null);
 const defaultNutritionGoals = [
     { title: t('卡路里'), value: '1653', color: 'bg-orange-500', key: 'calories' },
     {
-        title: t('蛋白质') + ' (g)',
+        title: t('蛋白质'),
         value: '130.0',
         color: 'bg-green-500',
         key: 'protein',
     },
-    { title: t('脂肪') + ' (g)', value: '45.0', color: 'bg-yellow-400', key: 'fat' },
-    { title: t('碳水') + ' (g)', value: '182.0', color: 'bg-blue-400', key: 'carbs' },
+    { title: t('脂肪'), value: '45.0', color: 'bg-yellow-400', key: 'fat' },
+    { title: t('碳水'), value: '182.0', color: 'bg-blue-400', key: 'carbs' },
 ];
 
 // 响应式数据

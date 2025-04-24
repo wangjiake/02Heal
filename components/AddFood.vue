@@ -9,7 +9,7 @@
             <div class="flex flex-wrap gap-2">
                 <button v-for="(tag, index) in visibleTags" :key="index" @click="applyTag(tag)"
                     class="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors text-sm font-medium">
-                    {{ $t(tag.name) }}
+                    {{ tag.name }}
                 </button>
             </div>
         </div>

@@ -16,16 +16,17 @@
 
         <!-- 底部导航按钮 -->
         <div class="mt-6">
-            <div class="flex flex-wrap gap-2 mt-6">
+            <div class="flex flex-wrap gap-4 mt-6">
                 <button v-for="(tab, index) in tabs" :key="index" :class="[
                     activeTab === index
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-black border border-gray-300',
-                    'rounded-lg px-4 py-2 text-xs sm:text-sm md:text-base whitespace-nowrap min-w-[80px] text-center',
+                        ? 'bg-blue-500 text-white hover:bg-blue-600'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400',
+                    'rounded-xl px-5 py-2.5 text-xs sm:text-sm md:text-base whitespace-nowrap min-w-[100px] text-center font-medium',
                 ]" @click="activeTab = index">
                     {{ tab.name }}
                 </button>
             </div>
+
 
             <!-- 组件内容区域 -->
             <div class="mt-4">
@@ -65,9 +66,9 @@ const currentLocale = ref(locale.value);
 // 切换语言并保留当前路径
 const switchLocale = async (newLocale) => {
     if (newLocale === currentLocale.value) return;
-    
+
     currentLocale.value = newLocale; // 立即更新UI状态
-    
+
     const switchLocalePath = useSwitchLocalePath();
     const newPath = switchLocalePath(newLocale);
     await router.push(newPath);
@@ -124,19 +125,19 @@ const activeTab = ref(0);
 <style scoped>
 /* 覆盖按钮的focus状态 */
 button:focus {
-  outline: none;
+    outline: none;
 }
 
 /* 如果需要，可以添加更具体的选择器来覆盖激活状态 */
-button.bg-blue-600:active, 
+button.bg-blue-600:active,
 button.bg-blue-600:focus {
-  background-color: rgb(37, 99, 235) !important;
-  color: white !important;
+    background-color: rgb(37, 99, 235) !important;
+    color: white !important;
 }
 
 button.bg-white:active,
 button.bg-white:focus {
-  background-color: white !important;
-  color: black !important;
+    background-color: white !important;
+    color: black !important;
 }
 </style>

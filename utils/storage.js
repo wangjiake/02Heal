@@ -81,16 +81,21 @@ export const formatNutritionValues = (nutrition) => {
 // 获取今日日期格式化为 YYYY-MM-DD，考虑凌晨重置
 export const getTodayDateString = () => {
     const now = new Date();
-
-    // 如果当前时间是凌晨 0 点，视为昨天
+    
+    // 使用本地时间获取年月日
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    
+    // 如果当前时间是凌晨 0 点，视为昨天（如果仍需要这个逻辑）
     if (now.getHours() === 0) {
         const yesterday = new Date(now);
         yesterday.setDate(now.getDate() - 1);
-        return yesterday.toISOString().split("T")[0];
+        return `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
     }
-
-    // 其他时间正常返回今天的日期
-    return now.toISOString().split("T")[0];
+    
+    // 返回本地时间的日期字符串
+    return `${year}-${month}-${day}`;
 };
 
 // 获取营养目标
