@@ -55,6 +55,9 @@ export default defineNuxtConfig({
 			fallbackLocale: "en", // 如果无法检测到语言，则回退到英语
 		},
 		baseUrl: 'https://fatloss.cc', // 需要为SEO添加基础URL
+		bundle: {
+			optimizeTranslationDirective: false,
+		}
 	},
 
 	// 开发服务器配置
