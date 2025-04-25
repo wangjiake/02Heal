@@ -41,7 +41,7 @@ export default defineNuxtConfig({
 		locales: [
 			{ code: "en", iso: "en", file: "en.json" },
 			// 注释多语言会变成单语言打包，最好单语言是默认语言
-			{ code: "zh_CN", iso: "zh_CN", file: "zh_CN.json" },
+			{ code: "zh-CN", iso: "zh-CN", file: "zh-CN.json" },
 			{ code: "ja", iso: "ja", file: "ja.json" },
 		],
 		defaultLocale: "en", // 设置默认语言为英语

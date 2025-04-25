@@ -62,7 +62,7 @@ const { t } = useI18n();
 // 支持的语言
 const locales = [
     { code: 'en', label: 'English' },
-    { code: 'zh_CN', label: '中文' },
+    { code: 'zh-CN', label: '中文' },
     { code: 'ja', label: '日本語' },
 ];
 
