@@ -66,7 +66,11 @@ export default defineNuxtConfig({
 		port: 7812, // 服务器端口
 		host: "0.0.0.0", // This allows access from any IP
 	},
+	nitro: {
+		minify: true, // 开启代码压缩
+		compressPublicAssets: true // 压缩静态资源
+	}
 
-	
+
 
 });
