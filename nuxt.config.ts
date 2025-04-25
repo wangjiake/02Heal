@@ -66,9 +66,27 @@ export default defineNuxtConfig({
 		port: 7812, // 服务器端口
 		host: "0.0.0.0", // This allows access from any IP
 	},
+	vite: {
+		build: {
+			minify: 'terser',
+			cssMinify: true,
+			terserOptions: {
+				compress: {
+					drop_console: true,
+					drop_debugger: true
+				}
+			}
+		}
+	},
+
+	// 开启 Nitro 的资源压缩
 	nitro: {
-		minify: true, // 开启代码压缩
-		compressPublicAssets: true // 压缩静态资源
+		minify: true,
+		// 传输压缩配置
+		compressPublicAssets: {
+			gzip: true,
+			brotli: true  // Brotli 压缩通常比 Gzip 效率更高
+		}
 	}
 
 
