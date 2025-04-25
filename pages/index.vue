@@ -25,7 +25,7 @@
                     class="rounded-xl px-5 py-2.5 text-xs sm:text-sm md:text-base whitespace-nowrap min-w-[100px] text-center font-medium"
                     :class="[
                         activeTab === index
-                            ? 'bg-blue-300 text-[#1C1C1CFF] hover:bg-blue-600'
+                            ? 'bg-blue-300 text-[#1C1C1CFF] hover:bg-blue-300'
                             : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
                     ]" @click="activeTab = index">
                     {{ tab.name }}
@@ -129,37 +129,3 @@ const tabs = [
 const activeTab = ref(0);
 </script>
 
-<style scoped>
-/* 覆盖按钮的focus状态 */
-button:focus {
-    outline: none;
-}
-
-/* 如果需要，可以添加更具体的选择器来覆盖激活状态 */
-button.bg-blue-600:active,
-button.bg-blue-600:focus {
-    background-color: rgb(37, 99, 235) !important;
-    color: white !important;
-}
-
-button.bg-white:active,
-button.bg-white:focus {
-    background-color: white !important;
-    color: black !important;
-}
-
-/* 添加平滑过渡效果 */
-.tab-content-transition {
-    transition: all 0.3s ease;
-}
-
-.component-wrapper {
-    position: relative;
-}
-
-/* 为ShowCard组件添加样式确保稳定高度 */
-.show-card-container {
-    position: relative;
-    width: 100%;
-}
-</style>
