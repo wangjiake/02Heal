@@ -8,6 +8,15 @@
 <script setup>
 import { ref, provide, onMounted } from "vue";
 import ToastContainer from "~/components/ToastContainer.vue";
+import { useI18n } from 'vue-i18n'
+
+const { locale } = useI18n()
+useHead({
+    htmlAttrs: {
+        lang: locale,
+        dir: 'ltr',
+    },
+})
 
 const toastContainer = ref(null);
 

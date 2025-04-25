@@ -2,35 +2,39 @@
 <template>
     <div class="p-4">
         <div class="flex justify-end gap-2 mb-4">
-            <button v-for="locale in locales" :key="locale.code" :class="[
-                locale.code === currentLocale.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-black border border-gray-300',
-                'rounded-lg px-2 py-1 text-xs sm:text-sm hover:bg-gray-100 transition',
-            ]" @click="switchLocale(locale.code)">
+            <button v-for="locale in locales" :key="locale.code"
+                class="rounded-lg px-2 py-1 text-xs sm:text-sm hover:bg-gray-100 transition min-w-[80px] text-center"
+                :class="[
+                    locale.code === currentLocale.value
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-black border border-gray-300'
+                ]" @click="switchLocale(locale.code)">
                 {{ locale.label }}
             </button>
         </div>
-        <!-- ShowCard组件 -->
-        <ShowCardComponent />
 
-        <!-- 底部导航按钮 -->
-        <div class="mt-6">
+        <!-- ShowCard组件 -->
+        <div class="show-card-container" style="min-height: 200px">
+            <ShowCardComponent />
+        </div>
+
+        <!-- 底部导航按钮 - 移除了外层div的mt-6 -->
+        <div>
             <div class="flex flex-wrap gap-4 mt-6">
-                <button v-for="(tab, index) in tabs" :key="index" :class="[
-                    activeTab === index
-                        ? 'bg-blue-500 text-white hover:bg-blue-600'
-                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400',
-                    'rounded-xl px-5 py-2.5 text-xs sm:text-sm md:text-base whitespace-nowrap min-w-[100px] text-center font-medium',
-                ]" @click="activeTab = index">
+                <button v-for="(tab, index) in tabs" :key="index"
+                    class="rounded-xl px-5 py-2.5 text-xs sm:text-sm md:text-base whitespace-nowrap min-w-[100px] text-center font-medium"
+                    :class="[
+                        activeTab === index
+                            ? 'bg-blue-300 text-[#1C1C1CFF] hover:bg-blue-600'
+                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                    ]" @click="activeTab = index">
                     {{ tab.name }}
                 </button>
             </div>
 
-
-            <!-- 组件内容区域 -->
-            <div class="mt-4">
-                <component :is="tabs[activeTab].component" />
+            <!-- 组件内容区域 - 添加了最小高度和过渡效果 -->
+            <div class="mt-4 component-wrapper" style="min-height: 300px">
+                <component :is="tabs[activeTab].component" class="tab-content-transition" />
             </div>
         </div>
     </div>
@@ -40,14 +44,15 @@
 import { ref } from "vue";
 import { useHead } from "nuxt/app";
 
-import ShowCardComponent from "~/components/ShowCard.vue";
-import AddFoodComponent from "~/components/AddFood.vue";
-import SetGoalComponent from "~/components/SetGoal.vue";
-import TagManagementComponent from "~/components/TagManagement.vue";
-import HistoryRecordComponent from "~/components/HistoryRecord.vue";
-import FrozenCalculationComponent from "~/components/FrozenCalculation.vue";
-import PackagedCalculationComponent from "~/components/PackagedCalculation.vue";
-import ImportTags from "~/components/ImportTags.vue";
+const ShowCardComponent = defineAsyncComponent(() => import("~/components/ShowCard.vue"));
+const AddFoodComponent = defineAsyncComponent(() => import("~/components/AddFood.vue"));
+const SetGoalComponent = defineAsyncComponent(() => import("~/components/SetGoal.vue"));
+const TagManagementComponent = defineAsyncComponent(() => import("~/components/TagManagement.vue"));
+const HistoryRecordComponent = defineAsyncComponent(() => import("~/components/HistoryRecord.vue"));
+const FrozenCalculationComponent = defineAsyncComponent(() => import("~/components/FrozenCalculation.vue"));
+const PackagedCalculationComponent = defineAsyncComponent(() => import("~/components/PackagedCalculation.vue"));
+const ImportTags = defineAsyncComponent(() => import("~/components/ImportTags.vue"));
+
 import { useI18n } from "vue-i18n";
 import { useRouter, useRoute, useLocalePath, useSwitchLocalePath } from '#imports';
 const { locale } = useI18n();
@@ -79,7 +84,7 @@ useHead({
         {
             name: "viewport",
             content:
-                "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no",
+                "width=device-width, initial-scale=1.0",
         },
     ],
 });
@@ -141,5 +146,20 @@ button.bg-white:active,
 button.bg-white:focus {
     background-color: white !important;
     color: black !important;
+}
+
+/* 添加平滑过渡效果 */
+.tab-content-transition {
+    transition: all 0.3s ease;
+}
+
+.component-wrapper {
+    position: relative;
+}
+
+/* 为ShowCard组件添加样式确保稳定高度 */
+.show-card-container {
+    position: relative;
+    width: 100%;
 }
 </style>

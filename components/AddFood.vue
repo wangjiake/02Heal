@@ -25,12 +25,14 @@
             </div>
 
             <div v-for="(item, index) in nutritionValues" :key="index" class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+                <label :for="'nutrition-' + item.key" class="block text-sm font-medium text-gray-700 mb-1">
                     {{ item.title }}
                 </label>
                 <div class="relative rounded-md shadow-sm">
-                    <input type="text" inputmode="decimal" v-model="item.value" @input="formatNumber(item)"
-                        class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" />
+                    <input :id="'nutrition-' + item.key" type="text" inputmode="decimal" v-model="item.value"
+                        @input="formatNumber(item)"
+                        class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                        :aria-label="item.title" />
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <span class="text-gray-500 sm:text-sm">
                             {{ item.key === "calories" ? "kcal" : "g" }}
@@ -41,7 +43,7 @@
 
             <div class="flex flex-col sm:flex-row gap-3 mt-6">
                 <button type="submit"
-                    class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    class="w-full sm:w-auto px-6 py-3 bg-orange-700 text-white rounded-md hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
                     {{ $t("添加食物") }}
                 </button>
                 <button type="button" @click="resetForm"
@@ -115,7 +117,7 @@ const foodName = ref("");
 const nutritionValues = ref([
     { title: t('卡路里'), value: "", color: "bg-orange-500", key: "calories" },
     { title: t('蛋白质') + "(g)", value: "", color: "bg-green-500", key: "protein" },
-    { title: t('脂肪') + "(g)" , value: "", color: "bg-yellow-400", key: "fat" },
+    { title: t('脂肪') + "(g)", value: "", color: "bg-yellow-400", key: "fat" },
     { title: t('碳水') + "(g)", value: "", color: "bg-blue-400", key: "carbs" },
 ]);
 const todayFoods = ref([]);
@@ -208,9 +210,9 @@ const applyTag = (tag) => {
 
     // 显示提示
     if (toast) {
-        toast.success(t('已添加')+(` "${tag.name}"!`));
+        toast.success(t('已添加') + (` "${tag.name}"!`));
     } else if (window.$toast) {
-        window.$toast.success(t('已添加')+(` "${tag.name}"!`));
+        window.$toast.success(t('已添加') + (` "${tag.name}"!`));
     }
 
     // 触发组件事件

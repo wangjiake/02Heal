@@ -12,7 +12,7 @@
                     :class="[
                         item.color,
                         parseFloat(item.value) < 0 ? 'bg-red-500' : item.color,
-                        'w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full flex flex-col items-center justify-center text-white shadow-lg',
+                        'w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full flex flex-col items-center justify-center text-[#1C1C1CFF] shadow-lg',
                     ]"
                 >
                     <div class="text-sm xs:text-base sm:text-lg md:text-xl">
