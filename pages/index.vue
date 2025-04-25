@@ -13,14 +13,12 @@
             </button>
         </div>
 
-        <!-- ShowCard组件 - Added skeleton placeholder while loading -->
-        <div class="show-card-container">
-            <div v-if="!isShowCardLoaded" class="bg-gray-100 animate-pulse rounded-lg"
-                style="height: 200px; width: 100%;"></div>
-            <ShowCardComponent v-else @mounted="isShowCardLoaded = true" />
+        <!-- ShowCard组件 -->
+        <div class="show-card-container" style="min-height: 200px">
+            <ShowCardComponent />
         </div>
 
-        <!-- 底部导航按钮 -->
+        <!-- 底部导航按钮 - 移除了外层div的mt-6 -->
         <div>
             <div class="flex flex-wrap gap-4 mt-6">
                 <button v-for="(tab, index) in tabs" :key="index"
@@ -34,40 +32,20 @@
                 </button>
             </div>
 
-            <!-- Component content area with improved layout stability -->
-            <div class="mt-4 component-wrapper relative">
-                <!-- Placeholder that maintains consistent height -->
-                <div v-if="!isComponentLoaded" class="bg-gray-50 rounded-lg" style="height: 400px; width: 100%;"></div>
-
-                <!-- Actual component with stable height -->
-                <div v-else class="tab-content-transition">
-                    <component :is="tabs[activeTab].component" @mounted="handleComponentMounted" />
-                </div>
+            <!-- 组件内容区域 - 添加了最小高度和过渡效果 -->
+            <div class="mt-4 component-wrapper" style="min-height: 300px">
+                <component :is="tabs[activeTab].component" class="tab-content-transition" />
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { useHead } from "nuxt/app";
 
-// Eagerly import the most critical component
-import ShowCardComponent from "~/components/ShowCard.vue";
-
-// Track loading states
-const isShowCardLoaded = ref(false);
-const isComponentLoaded = ref(false);
-
-// Pre-load initial tab component
-const AddFoodComponent = defineAsyncComponent({
-    loader: () => import("~/components/AddFood.vue"),
-    loadingComponent: null, // We handle our own placeholder
-    delay: 0, // No delay
-    timeout: 5000 // 5 second timeout
-});
-
-// Define other components with async loading
+const ShowCardComponent = defineAsyncComponent(() => import("~/components/ShowCard.vue"));
+const AddFoodComponent = defineAsyncComponent(() => import("~/components/AddFood.vue"));
 const SetGoalComponent = defineAsyncComponent(() => import("~/components/SetGoal.vue"));
 const TagManagementComponent = defineAsyncComponent(() => import("~/components/TagManagement.vue"));
 const HistoryRecordComponent = defineAsyncComponent(() => import("~/components/HistoryRecord.vue"));
@@ -81,37 +59,35 @@ const { locale } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const { t } = useI18n();
-
-// Supported languages
+// 支持的语言
 const locales = [
     { code: 'en', label: 'English' },
     { code: 'zh_CN', label: '中文' },
     { code: 'ja', label: '日本語' },
 ];
 
-// Track current locale
+// 使用ref跟踪当前语言
 const currentLocale = ref(locale.value);
 
-// Switch locale and maintain current path
+// 切换语言并保留当前路径
 const switchLocale = async (newLocale) => {
     if (newLocale === currentLocale.value) return;
 
-    currentLocale.value = newLocale; // Immediately update UI state
+    currentLocale.value = newLocale; // 立即更新UI状态
 
     const switchLocalePath = useSwitchLocalePath();
     const newPath = switchLocalePath(newLocale);
     await router.push(newPath);
 };
-
 useHead({
     meta: [
         {
             name: "viewport",
-            content: "width=device-width, initial-scale=1.0",
+            content:
+                "width=device-width, initial-scale=1.0",
         },
     ],
 });
-
 useSeoMeta({
     title: t("减脂计算器"),
     ogTitle: t("减脂计算器"),
@@ -124,6 +100,8 @@ useSeoMeta({
     ogImage:
         "https://3651224.xyz/d/BQACAgUAAyEGAASJ4sQbAAIBWGgIkSKsOaaV6EcFMIqPkvhm6nifAAJdGAACq9dBVNDGtBUH-ClJNgQ",
     twitterCard: "summary_large_image",
+    // twitterSite: "@mytwitter",
+    // twitterCreator: "@mytwitter",
     ogUrl:
         "https://3651224.xyz/d/BQACAgUAAyEGAASJ4sQbAAIBWGgIkSKsOaaV6EcFMIqPkvhm6nifAAJdGAACq9dBVNDGtBUH-ClJNgQ",
     ogType: "website",
@@ -136,8 +114,7 @@ useSeoMeta({
     twitterImage:
         "https://3651224.xyz/d/BQACAgUAAyEGAASJ4sQbAAIBWGgIkSKsOaaV6EcFMIqPkvhm6nifAAJdGAACq9dBVNDGtBUH-ClJNgQ",
 });
-
-// Define tab data
+// 定义标签数据
 const tabs = [
     { name: t("添加食物"), component: AddFoodComponent },
     { name: t("冷冻计算"), component: FrozenCalculationComponent },
@@ -148,36 +125,17 @@ const tabs = [
     { name: t("导入标签"), component: ImportTags },
 ];
 
-// Active tab
+// 当前激活的标签
 const activeTab = ref(0);
-
-// Handle component mounting
-const handleComponentMounted = () => {
-    isComponentLoaded.value = true;
-};
-
-// Mark the first tab component as loaded after mounting
-onMounted(() => {
-    // Set a small timeout to ensure the component has time to render
-    setTimeout(() => {
-        isComponentLoaded.value = true;
-    }, 100);
-
-    // Preload the first few tabs to reduce later layout shifts
-    setTimeout(() => {
-        import("~/components/FrozenCalculation.vue");
-        import("~/components/PackagedCalculation.vue");
-    }, 1000);
-});
 </script>
 
 <style scoped>
-/* Override button focus state */
+/* 覆盖按钮的focus状态 */
 button:focus {
     outline: none;
 }
 
-/* More specific selectors to override active state */
+/* 如果需要，可以添加更具体的选择器来覆盖激活状态 */
 button.bg-blue-600:active,
 button.bg-blue-600:focus {
     background-color: rgb(37, 99, 235) !important;
@@ -190,45 +148,18 @@ button.bg-white:focus {
     color: black !important;
 }
 
-/* Add smooth transition effects */
+/* 添加平滑过渡效果 */
 .tab-content-transition {
-    transition: opacity 0.3s ease;
-    width: 100%;
+    transition: all 0.3s ease;
 }
 
 .component-wrapper {
     position: relative;
-    min-height: 400px;
-    /* Consistent height to avoid layout shifts */
-    contain-intrinsic-size: 0 400px;
-    /* Modern browsers - helps prevent CLS */
 }
 
-/* Style for ShowCard component container */
+/* 为ShowCard组件添加样式确保稳定高度 */
 .show-card-container {
     position: relative;
     width: 100%;
-    height: 200px;
-    /* Fixed height */
-    contain-intrinsic-size: 0 200px;
-    /* Modern browsers - helps prevent CLS */
-    margin-bottom: 1.5rem;
-}
-
-/* Animation for placeholders */
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 0.6;
-    }
-
-    50% {
-        opacity: 0.8;
-    }
-}
-
-.animate-pulse {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 </style>
