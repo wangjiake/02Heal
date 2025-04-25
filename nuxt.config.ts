@@ -84,7 +84,6 @@ export default defineNuxtConfig({
 
 	vite: {
 		build: {
-			// 移除注释和console代码
 			minify: 'terser',
 			terserOptions: {
 				compress: {
@@ -92,38 +91,14 @@ export default defineNuxtConfig({
 					drop_debugger: process.env.NODE_ENV === 'production'
 				}
 			},
-			
-		},
-		
-	},
-
-	// 组件自动导入，按需加载
-	components: {
-		dirs: [
-			'~/components',
-			{
-				path: '~/components/global',
-				global: true
+			rollupOptions: {
+				output: {
+					manualChunks: {
+						vendor: ['vue', 'vue-router']
+					}
+				}
 			}
-		],
-		directoryAsNamespace: true
-	},
-
-	// 实验性功能
-	experimental: {
-		// 使用Nuxt3的组件懒加载功能
-		componentIslands: true,
-		payloadExtraction: true,
-		asyncEntry: true,
-		reactivityTransform: true
-	},
-
-	// 分析构建包大小
-	analyze: process.env.ANALYZE === 'true',
-
-	// 按需导入策略
-	imports: {
-		autoImport: true,
-		dirs: ['stores']
+		},
 	}
+
 });
