@@ -235,46 +235,7 @@ const fixedTags = ref([
         fixed: true,
         createdAt: new Date().toISOString(),
     },
-    {
-        name: t('全粒面包'),
-        calories: 155,
-        protein: 5.2,
-        fat: 2.8,
-        carbs: 25.5,
-        visible: true,
-        fixed: true,
-        createdAt: new Date().toISOString(),
-    },
-    {
-        name: t('牛奶'),
-        calories: 102,
-        protein: 5.1,
-        fat: 5.8,
-        carbs: 7.4,
-        visible: true,
-        fixed: true,
-        createdAt: new Date().toISOString(),
-    },
-    {
-        name: t('蛋白粉'),
-        calories: 132,
-        protein: 26.5,
-        fat: 1.4,
-        carbs: 3.3,
-        visible: true,
-        fixed: true,
-        createdAt: new Date().toISOString(),
-    },
-    {
-        name: t('肌酸'),
-        calories: 18,
-        protein: 4.4,
-        fat: 0,
-        carbs: 0,
-        visible: true,
-        fixed: true,
-        createdAt: new Date().toISOString(),
-    },
+    
 ]);
 
 // 合并固定标签和用户标签

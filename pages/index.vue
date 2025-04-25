@@ -47,6 +47,7 @@ import TagManagementComponent from "~/components/TagManagement.vue";
 import HistoryRecordComponent from "~/components/HistoryRecord.vue";
 import FrozenCalculationComponent from "~/components/FrozenCalculation.vue";
 import PackagedCalculationComponent from "~/components/PackagedCalculation.vue";
+import ImportTags from "~/components/ImportTags.vue";
 import { useI18n } from "vue-i18n";
 import { useRouter, useRoute, useLocalePath, useSwitchLocalePath } from '#imports';
 const { locale } = useI18n();
@@ -111,11 +112,12 @@ useSeoMeta({
 // 定义标签数据
 const tabs = [
     { name: t("添加食物"), component: AddFoodComponent },
-    { name: t("设置目标"), component: SetGoalComponent },
-    { name: t("标签管理"), component: TagManagementComponent },
-    { name: t("历史记录"), component: HistoryRecordComponent },
     { name: t("冷冻计算"), component: FrozenCalculationComponent },
     { name: t("袋装计算"), component: PackagedCalculationComponent },
+    { name: t("标签管理"), component: TagManagementComponent },
+    { name: t("设置目标"), component: SetGoalComponent },
+    { name: t("历史记录"), component: HistoryRecordComponent },
+    { name: t("导入标签"), component: ImportTags },
 ];
 
 // 当前激活的标签
