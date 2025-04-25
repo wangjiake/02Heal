@@ -33,11 +33,6 @@ export default defineNuxtConfig({
 				separator: "·",
 			},
 		},
-		// 设置页面转场效果，减少布局偏移感知
-		pageTransition: {
-			name: 'page',
-			mode: 'out-in'
-		}
 	},
 
 	// i18n 配置
@@ -72,33 +67,6 @@ export default defineNuxtConfig({
 		host: "0.0.0.0", // This allows access from any IP
 	},
 
-	// 性能优化配置
-	nitro: {
-		esbuild: {
-			options: {
-				target: 'esnext'
-			}
-		},
-		minify: true,
-	},
-
-	vite: {
-		build: {
-			minify: 'terser',
-			terserOptions: {
-				compress: {
-					drop_console: process.env.NODE_ENV === 'production',
-					drop_debugger: process.env.NODE_ENV === 'production'
-				}
-			},
-			rollupOptions: {
-				output: {
-					manualChunks: {
-						vendor: ['vue', 'vue-router']
-					}
-				}
-			}
-		},
-	}
+	
 
 });
