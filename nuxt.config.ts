@@ -80,11 +80,6 @@ export default defineNuxtConfig({
 			}
 		},
 		minify: true,
-		// 预加载常用路由，减少初次访问延迟
-		prerender: {
-			crawlLinks: true,
-			routes: ['/']
-		}
 	},
 
 	vite: {
@@ -97,19 +92,9 @@ export default defineNuxtConfig({
 					drop_debugger: process.env.NODE_ENV === 'production'
 				}
 			},
-			// 分割代码块
-			rollupOptions: {
-				output: {
-					manualChunks: {
-						'vue': ['vue'],
-						'vue-router': ['vue-router']
-					}
-				}
-			}
+			
 		},
-		optimizeDeps: {
-			include: ['vue', 'vue-router']
-		}
+		
 	},
 
 	// 组件自动导入，按需加载
