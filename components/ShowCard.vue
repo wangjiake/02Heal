@@ -1,33 +1,28 @@
-<!-- components/CircularShowCard.vue -->
 <template>
     <div class="p-6 bg-white rounded-xl shadow-md">
         <h2 class="text-3xl font-bold text-center mb-6">{{ $t("剩余目标") }}</h2>
         <div v-if="dataLoaded" class="grid grid-cols-2 gap-3 md:gap-6">
-            <div
-                v-for="(item, index) in nutritionData"
-                :key="index"
-                class="flex justify-center"
-            >
-                <div
-                    :class="[
-                        item.color,
-                        parseFloat(item.value) < 0 ? 'bg-red-500' : item.color,
-                        'w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full flex flex-col items-center justify-center text-[#1C1C1CFF] shadow-lg',
-                    ]"
-                >
+            <div v-for="(item, index) in nutritionData" :key="index" class="flex justify-center">
+                <div :class="[
+                    item.color,
+                    parseFloat(item.value) < 0 ? 'bg-red-500' : item.color,
+                    'w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full flex flex-col items-center justify-center text-[#1C1C1CFF] shadow-lg',
+                ]">
                     <div class="text-sm xs:text-base sm:text-lg md:text-xl">
                         {{ $t(item.title) }}
                     </div>
-                    <div
-                        class="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold mt-1 sm:mt-2"
-                    >
+                    <div class="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold mt-1 sm:mt-2">
                         {{ item.value }}
                     </div>
                 </div>
             </div>
         </div>
-        <div v-else class="flex justify-center items-center h-32">
-            <div class="animate-pulse text-gray-400">{{ $t("加载中...") }}</div>
+        <div v-else class="grid grid-cols-2 gap-3 md:gap-6">
+            <div v-for="i in 4" :key="i" class="flex justify-center">
+                <div
+                    class="w-24 h-24 xs:w-28 xs:h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 bg-gray-200 rounded-full skeleton-item shimmer-effect">
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -36,7 +31,6 @@
 import { ref, onMounted } from 'vue';
 import { getNutritionGoals } from '../utils/storage';
 import { useI18n } from "vue-i18n";
-import { nextTick } from 'vue';
 
 const { t } = useI18n();
 // 创建响应式数据
@@ -109,3 +103,39 @@ defineExpose({
     refreshData: loadGoals,
 });
 </script>
+
+<style scoped>
+/* 骨架屏闪光效果 */
+.shimmer-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer-effect::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+        to bottom right, 
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 25%, 
+        rgba(255, 255, 255, 0.5) 50%, 
+        rgba(255, 255, 255, 0.2) 75%, 
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 1.5s infinite;
+    transform: rotate(30deg);
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(30deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(30deg);
+    }
+}
+</style>
