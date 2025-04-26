@@ -87,17 +87,9 @@ export const getTodayDateString = () => {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     
-    // 如果当前时间是凌晨 0 点，视为昨天（如果仍需要这个逻辑）
-    if (now.getHours() === 0) {
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        return `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-    }
-    
-    // 返回本地时间的日期字符串
+    // 返回本地时间的日期字符串，不再有凌晨特殊逻辑
     return `${year}-${month}-${day}`;
 };
-
 // 获取营养目标
 export const getNutritionGoals = () => {
     return getData("nutritionGoals", []);
@@ -208,16 +200,16 @@ export const getFoodHistory = (days = 30) => {
     for (let i = 0; i < days; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() - i);
-        let dateString = date.toISOString().split("T")[0];
-
-        // 如果是今天且当前是凌晨0点，调整为昨天的日期
-        if (i === 0 && today.getHours() === 0) {
-            const yesterday = new Date(today);
-            yesterday.setDate(today.getDate() - 1);
-            dateString = yesterday.toISOString().split("T")[0];
-        }
-
-        const foods = getFoodsByDate(dateString);
+        
+        // 一致格式化日期，无特殊凌晨逻辑
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+        
+        // 获取该日期的食物
+        const dateKey = `foods_${dateString}`;
+        const foods = getData(dateKey, []);
 
         if (foods.length > 0) {
             history.push({
@@ -436,23 +428,13 @@ export const checkForDailyReset = () => {
     if (!isClient()) return false;
 
     const lastResetDate = getLastResetDate();
-    const now = new Date();
-    const currentHour = now.getHours();
-
-    // 获取应该对比的日期（凌晨0点时视为昨天）
-    let dateToCompare;
-    if (currentHour === 0) {
-        // 凌晨0点，不需要重置
-        return false;
-    } else {
-        // 其他时间，正常对比今天的日期
-        dateToCompare = now.toISOString().split("T")[0];
-    }
+    const today = getTodayDateString();
 
     // 如果没有重置过或者不是今天重置的
-    if (!lastResetDate || lastResetDate !== dateToCompare) {
+    if (!lastResetDate || lastResetDate !== today) {
+        // 重要：保持昨天的数据，仅重置目标
         resetDailyGoals();
-        setLastResetDate(dateToCompare);
+        setLastResetDate(today);
         return true;
     }
 
@@ -483,9 +465,8 @@ export const resetDailyGoals = () => {
         }
     }
 
-    // 清空当日食物记录
-    const currentDate = getTodayDateString();
-    removeData(`foods_${currentDate}`);
+    // 重要变更：不再清空当日食物记录
+    // 去掉这行: removeData(`foods_${currentDate}`);
 
     // 清空已消耗值，确保是0.00格式
     setConsumedNutrition({ calories: 0, protein: 0, fat: 0, carbs: 0 });
