@@ -81,12 +81,12 @@ export const formatNutritionValues = (nutrition) => {
 // 获取今日日期格式化为 YYYY-MM-DD，考虑凌晨重置
 export const getTodayDateString = () => {
     const now = new Date();
-    
+
     // 使用本地时间获取年月日
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    
+
     // 返回本地时间的日期字符串，不再有凌晨特殊逻辑
     return `${year}-${month}-${day}`;
 };
@@ -200,13 +200,13 @@ export const getFoodHistory = (days = 30) => {
     for (let i = 0; i < days; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() - i);
-        
+
         // 一致格式化日期，无特殊凌晨逻辑
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         const dateString = `${year}-${month}-${day}`;
-        
+
         // 获取该日期的食物
         const dateKey = `foods_${dateString}`;
         const foods = getData(dateKey, []);
@@ -539,27 +539,22 @@ export const calculateFinalWeight = (originalWeight, lossRate) => {
 
 // 计算冷冻后的营养值
 export const calculateFinalNutrition = (nutritionPer100g, originalWeight, finalWeight) => {
-    // 默认值
     const defaultValues = { calories: 0, protein: 0, fat: 0, carbs: 0 };
 
-    if (!originalWeight || !finalWeight) return defaultValues;
-
-    const weightValue = parseFloat(originalWeight);
     const finalWeightValue = parseFloat(finalWeight);
+    if (isNaN(finalWeightValue) || finalWeightValue <= 0) return defaultValues;
 
-    if (isNaN(weightValue) || isNaN(finalWeightValue) || weightValue <= 0) return defaultValues;
+    // 用冷冻后重量来计算实际摄入的营养
+    const ratio = finalWeightValue / 100;
 
-    // 计算原始营养值总量
-    const originalTotalNutrition = {
-        calories: (nutritionPer100g.calories * weightValue) / 100,
-        protein: (nutritionPer100g.protein * weightValue) / 100,
-        fat: (nutritionPer100g.fat * weightValue) / 100,
-        carbs: (nutritionPer100g.carbs * weightValue) / 100
-    };
-
-    // 计算最终营养值 (保持比例)
-    return formatNutritionValues(originalTotalNutrition);
+    return formatNutritionValues({
+        calories: nutritionPer100g.calories * ratio,
+        protein: nutritionPer100g.protein * ratio,
+        fat: nutritionPer100g.fat * ratio,
+        carbs: nutritionPer100g.carbs * ratio
+    });
 };
+
 
 // 添加冷冻食物
 export const addFrozenFood = (foodName, finalWeight, finalNutrition) => {
