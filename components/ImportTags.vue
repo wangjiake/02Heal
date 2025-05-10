@@ -228,51 +228,44 @@ const importTags = () => {
 
         let updatedTags;
         if (overwriteExisting.value) {
-            // 创建一个新数组，用于存储更新后的标签
-            const mergedTags = [...existingTags];
-
-            // 处理每个导入的标签
-            tagsToImport.forEach(newTag => {
-                const existingIndex = mergedTags.findIndex(tag => tag.name === newTag.name);
-
-                if (existingIndex !== -1) {
-                    // 覆盖现有标签
-                    mergedTags[existingIndex] = {
-                        ...mergedTags[existingIndex],
+            // 用 name 匹配并覆盖旧标签
+            updatedTags = tagsToImport.reduce((acc, newTag) => {
+                const index = acc.findIndex(tag => tag.name === newTag.name);
+                if (index !== -1) {
+                    acc[index] = {
+                        ...acc[index],
                         ...newTag,
                         updatedAt: new Date().toISOString()
                     };
                 } else {
-                    // 添加新标签
-                    mergedTags.push({
+                    acc.push({
                         ...newTag,
                         createdAt: new Date().toISOString()
                     });
                 }
-            });
-
-            updatedTags = mergedTags;
+                return acc;
+            }, [...existingTags]);
         } else {
-            // 直接添加新标签，不覆盖现有标签
+            // 忽略同名标签，仅添加新标签
+            const newNames = new Set(existingTags.map(tag => tag.name));
+            const newUniqueTags = tagsToImport.filter(tag => !newNames.has(tag.name));
             updatedTags = [
                 ...existingTags,
-                ...tagsToImport.map(tag => ({
+                ...newUniqueTags.map(tag => ({
                     ...tag,
                     createdAt: new Date().toISOString()
                 }))
             ];
         }
 
-        // 保存更新后的标签
+        // 保存标签库
         const saveResult = saveVisibleFoodTags(updatedTags);
 
         if (saveResult) {
             importResult.value = {
                 success: true,
-                message: t('标签导入成功')
+                message: t('标签导入成功，共导入') + ' ' + tagsToImport.length + ' ' + t('个标签')
             };
-
-            // 清空输入框
             importText.value = '';
         } else {
             importResult.value = {
