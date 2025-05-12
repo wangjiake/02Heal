@@ -204,15 +204,15 @@ const toast = inject('toast', null);
 
 // 默认营养目标数据
 const defaultNutritionGoals = [
-    { title: t('卡路里'), value: '1653', color: 'bg-orange-500', key: 'calories' },
+    { title: t('卡路里'), value: '1558', color: 'bg-orange-500', key: 'calories' },
     {
         title: t('蛋白质'),
-        value: '130.0',
+        value: '136.0',
         color: 'bg-green-500',
         key: 'protein',
     },
-    { title: t('脂肪'), value: '45.0', color: 'bg-yellow-400', key: 'fat' },
-    { title: t('碳水'), value: '182.0', color: 'bg-blue-400', key: 'carbs' },
+    { title: t('脂肪'), value: '43.0', color: 'bg-yellow-400', key: 'fat' },
+    { title: t('碳水'), value: '155.0', color: 'bg-blue-400', key: 'carbs' },
 ];
 
 // 响应式数据
