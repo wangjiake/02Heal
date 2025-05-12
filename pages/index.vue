@@ -33,7 +33,7 @@
             </div>
 
             <!-- 组件内容区域 - 添加了最小高度和过渡效果 -->
-            <div class="mt-4 component-wrapper" style="min-height: 300px">
+            <div class="mt-4 component-wrapper relative min-h-[300px]">
                 <component :is="tabs[activeTab].component" class="tab-content-transition" />
             </div>
         </div>
@@ -128,4 +128,3 @@ const tabs = [
 // 当前激活的标签
 const activeTab = ref(0);
 </script>
-
