@@ -1,6 +1,9 @@
 <template>
     <div class="p-6 bg-white rounded-xl shadow-md">
-        <h2 class="text-3xl font-bold text-center mb-6">{{ $t("剩余目标") }}</h2>
+        <h2 class="text-3xl font-bold text-center mb-6">
+            {{ activeGoalName }} - {{ $t("剩余目标") }}
+        </h2>
+
         <div v-if="dataLoaded" class="grid grid-cols-2 gap-3 md:gap-6">
             <div v-for="(item, index) in nutritionData" :key="index" class="flex justify-center">
                 <div :class="[
@@ -29,7 +32,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getNutritionGoals } from '../utils/storage';
+import { getNutritionGoals, getActiveGoalSetId, getNutritionGoalsList } from '../utils/storage';
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
@@ -37,6 +40,8 @@ const { t } = useI18n();
 const nutritionData = ref([]);
 // 加载状态标志
 const dataLoaded = ref(false);
+
+const activeGoalName = ref('');
 
 // 默认营养数据（如果没有存储数据）
 const defaultNutritionData = [
@@ -69,15 +74,20 @@ const defaultNutritionData = [
 // 加载存储的目标数据
 const loadGoals = () => {
     const savedGoals = getNutritionGoals();
-    if (savedGoals && savedGoals.length > 0) {
-        nutritionData.value = savedGoals;
-    } else {
-        // 如果没有存储数据，使用默认值
-        nutritionData.value = [...defaultNutritionData];
-    }
-    // 标记为已加载
+    const goalsList = getNutritionGoalsList();
+    const activeId = getActiveGoalSetId();
+
+    // 设置名称
+    const activeGoal = goalsList.find(g => g.id === activeId);
+    activeGoalName.value = activeGoal ? activeGoal.name : t('默认');
+
+    nutritionData.value = savedGoals && savedGoals.length > 0
+        ? savedGoals
+        : [...defaultNutritionData];
+
     dataLoaded.value = true;
 };
+
 
 // 设置监听器
 const setupEventListeners = () => {
@@ -118,14 +128,12 @@ defineExpose({
     left: -100%;
     width: 300%;
     height: 300%;
-    background: linear-gradient(
-        to bottom right, 
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.2) 25%, 
-        rgba(255, 255, 255, 0.5) 50%, 
-        rgba(255, 255, 255, 0.2) 75%, 
-        rgba(255, 255, 255, 0) 100%
-    );
+    background: linear-gradient(to bottom right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.2) 25%,
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0.2) 75%,
+            rgba(255, 255, 255, 0) 100%);
     animation: shimmer 1.5s infinite;
     transform: rotate(30deg);
 }
@@ -134,6 +142,7 @@ defineExpose({
     0% {
         transform: translateX(-100%) translateY(-100%) rotate(30deg);
     }
+
     100% {
         transform: translateX(100%) translateY(100%) rotate(30deg);
     }
