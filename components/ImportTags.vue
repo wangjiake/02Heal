@@ -131,57 +131,32 @@ const importTags = () => {
             return;
         }
 
-        // 尝试解析JSON
+        // 解析输入内容为 JSON
         let tagsToImport = [];
         let parsedData;
 
         try {
-            // 首先尝试直接解析JSON
             parsedData = JSON.parse(importText.value);
-
-            // 检查是否为单个对象或数组
-            if (Array.isArray(parsedData)) {
-                tagsToImport = parsedData;
-            } else if (typeof parsedData === 'object' && parsedData !== null) {
-                // 如果是单个对象，将其放入数组中
-                tagsToImport = [parsedData];
-            } else {
-                throw new Error(t('数据格式不正确'));
-            }
+            tagsToImport = Array.isArray(parsedData)
+                ? parsedData
+                : [parsedData];
         } catch (jsonError) {
-            // JSON解析失败，尝试作为JavaScript对象评估
             try {
-                // 替换JavaScript常见语法，使其更接近JSON
-                let processedText = importText.value
-                    .replace(/'/g, '"')  // 将单引号替换为双引号
-                    .replace(/(\w+):/g, '"$1":')  // 将属性名转为双引号包裹
-                    .replace(/,\s*}/g, '}')  // 移除对象末尾的逗号
-                    .replace(/,\s*]/g, ']');  // 移除数组末尾的逗号
-
-                // 再次尝试解析JSON
+                const processedText = importText.value
+                    .replace(/'/g, '"')
+                    .replace(/(\w+):/g, '"$1":')
+                    .replace(/,\s*}/g, '}')
+                    .replace(/,\s*]/g, ']');
                 parsedData = JSON.parse(processedText);
-
-                // 检查是否为单个对象或数组
-                if (Array.isArray(parsedData)) {
-                    tagsToImport = parsedData;
-                } else if (typeof parsedData === 'object' && parsedData !== null) {
-                    // 如果是单个对象，将其放入数组中
-                    tagsToImport = [parsedData];
-                } else {
-                    throw new Error(t('数据格式不正确'));
-                }
-            } catch (processError) {
-                // 最后尝试直接作为JS代码执行（小心使用）
+                tagsToImport = Array.isArray(parsedData)
+                    ? parsedData
+                    : [parsedData];
+            } catch (e) {
                 try {
                     const evalResult = new Function('return ' + importText.value)();
-
-                    if (Array.isArray(evalResult)) {
-                        tagsToImport = evalResult;
-                    } else if (typeof evalResult === 'object' && evalResult !== null) {
-                        tagsToImport = [evalResult];
-                    } else {
-                        throw new Error(t('数据格式不正确'));
-                    }
+                    tagsToImport = Array.isArray(evalResult)
+                        ? evalResult
+                        : [evalResult];
                 } catch (evalError) {
                     importResult.value = {
                         success: false,
@@ -192,7 +167,7 @@ const importTags = () => {
             }
         }
 
-        // 检查是否为空
+        // 验证每个标签
         if (tagsToImport.length === 0) {
             importResult.value = {
                 success: false,
@@ -201,8 +176,9 @@ const importTags = () => {
             return;
         }
 
-        // 验证每个标签是否有name属性
-        const invalidTag = tagsToImport.find(tag => !tag.name || typeof tag.name !== 'string' || tag.name.trim() === '');
+        const invalidTag = tagsToImport.find(
+            tag => !tag.name || typeof tag.name !== 'string' || tag.name.trim() === ''
+        );
         if (invalidTag) {
             importResult.value = {
                 success: false,
@@ -211,7 +187,7 @@ const importTags = () => {
             return;
         }
 
-        // 补充完整属性，确保数字类型
+        // 标准化标签结构
         tagsToImport = tagsToImport.map(tag => ({
             name: tag.name,
             calories: parseFloat(tag.calories || 0),
@@ -219,16 +195,15 @@ const importTags = () => {
             fat: parseFloat(tag.fat || 0),
             carbs: parseFloat(tag.carbs || 0),
             visible: tag.visible !== undefined ? tag.visible : true,
-            fixed: tag.fixed !== undefined ? tag.fixed : false,
+            fixed: false,
             createdAt: tag.createdAt || new Date().toISOString()
         }));
 
-        // 获取现有标签
-        const existingTags = getVisibleFoodTags();
+        // 获取已有用户标签
+        const existingTags = getFoodTags();
 
         let updatedTags;
         if (overwriteExisting.value) {
-            // 用 name 匹配并覆盖旧标签
             updatedTags = tagsToImport.reduce((acc, newTag) => {
                 const index = acc.findIndex(tag => tag.name === newTag.name);
                 if (index !== -1) {
@@ -246,7 +221,6 @@ const importTags = () => {
                 return acc;
             }, [...existingTags]);
         } else {
-            // 忽略同名标签，仅添加新标签
             const newNames = new Set(existingTags.map(tag => tag.name));
             const newUniqueTags = tagsToImport.filter(tag => !newNames.has(tag.name));
             updatedTags = [
@@ -258,27 +232,48 @@ const importTags = () => {
             ];
         }
 
-        // 保存标签库
-        const saveResult = saveVisibleFoodTags(updatedTags);
+        // ✅ 保存用户标签（供标签管理使用）
+        saveFoodTags(updatedTags);
 
-        if (saveResult) {
-            importResult.value = {
-                success: true,
-                message: t('标签导入成功，共导入') + ' ' + tagsToImport.length + ' ' + t('个标签')
-            };
-            importText.value = '';
-        } else {
-            importResult.value = {
-                success: false,
-                message: t('标签保存失败')
-            };
-        }
+        // ✅ 构建可见标签列表（系统标签 + 用户标签）
+        const fixedTags = [
+            {
+                name: t('鸡蛋'),
+                calories: 72,
+                protein: 6.3,
+                fat: 4.8,
+                carbs: 0.6,
+                visible: true,
+                fixed: true,
+                createdAt: new Date().toISOString(),
+            },
+            {
+                name: t('香蕉'),
+                calories: 105,
+                protein: 1.3,
+                fat: 0.4,
+                carbs: 27,
+                visible: true,
+                fixed: true,
+                createdAt: new Date().toISOString(),
+            }
+        ];
+
+        const visibleTags = [...fixedTags, ...updatedTags].filter(tag => tag.visible !== false);
+        saveVisibleFoodTags(visibleTags);
+
+        importResult.value = {
+            success: true,
+            message: t('标签导入成功，共导入') + ' ' + tagsToImport.length + ' ' + t('个标签')
+        };
+        importText.value = '';
     } catch (error) {
         console.error(t('导入错误:'), error);
         importResult.value = {
             success: false,
-            message: t('JSON解析失败: ') + error.message
+            message: t('导入失败: ') + error.message
         };
     }
 };
+
 </script>
