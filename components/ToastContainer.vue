@@ -3,7 +3,7 @@
     <div class="fixed inset-0 z-50 pointer-events-none flex flex-col items-end justify-start p-4 space-y-4">
         <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto transform" :class="[
             getColorClass(toast.type),
-            'transition-opacity transition-transform duration-300 ease-in-out',
+            'transition-opacity duration-300 ease-in-out',
             toast.isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'
         ]">
             <div class="flex items-center p-4 rounded-lg shadow-lg">
