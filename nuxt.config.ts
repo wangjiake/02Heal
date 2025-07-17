@@ -13,8 +13,18 @@ export default defineNuxtConfig({
 				viewer: true,
 			},
 		],
-		"@nuxtjs/i18n",
-	],
+	"@nuxtjs/i18n",
+	[
+		'@nuxtjs/google-gtag',
+		{
+			id: 'G-V40T838F5J', // 你的 Google Analytics ID
+			debug: false,        // 开发时可以设为 true 以查看日志
+			config: {            // 可选，设置更多 gtag 配置参数
+				anonymize_ip: true // 示例，启用 IP 匿名
+			}
+		}
+	]
+],
 
 	compatibilityDate: "2025-04-21",
 
