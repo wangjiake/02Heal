@@ -20,7 +20,7 @@
             <ul>
                 <li v-for="(task, idx) in tasks" :key="idx">
                     第{{ idx + 1 }}天：{{ task.count }}个
-                    <button @click="toggleComplete(idx)">
+                    <button @click="toggleComplete(idx)" :class="task.completed ? 'completed-btn' : 'incomplete-btn'">
                         {{ task.completed ? '已完成' : '未完成' }}
                     </button>
                 </li>
@@ -50,50 +50,73 @@ const STORAGE_KEY = 'target_data_v1'
 function loadData() {
     const data = localStorage.getItem(STORAGE_KEY)
     if (data) {
-        const parsed = JSON.parse(data)
-        goal.value = parsed.goal
-        total.value = parsed.total
-        days.value = parsed.days
-        tasks.value = parsed.tasks || []
-        today.value = parsed.today || getToday()
-        // 如果日期不是今天，重置当天完成状态
-        if (today.value !== getToday()) {
-            resetToday()
-            today.value = getToday()
-            saveData()
+        try {
+            const parsed = JSON.parse(data)
+            goal.value = parsed.goal || ''
+            total.value = parseInt(parsed.total) || 0
+            days.value = parseInt(parsed.days) || 0
+            tasks.value = parsed.tasks || []
+            today.value = parsed.today || getToday()
+
+
+            // 如果日期不是今天，重置当天完成状态
+            if (today.value !== getToday()) {
+                resetToday()
+                today.value = getToday()
+                saveData()
+            }
+        } catch (e) {
+            console.error('数据解析失败:', e)
+            // 清除损坏的数据
+            localStorage.removeItem(STORAGE_KEY)
         }
     }
 }
-
 // 保存数据到本地
 function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        goal: goal.value,
-        total: total.value,
-        days: days.value,
+    const dataToSave = {
+        goal: String(goal.value),
+        total: parseInt(total.value) || 0,  // 确保是数字
+        days: parseInt(days.value) || 0,    // 确保是数字
         tasks: tasks.value,
         today: today.value
-    }))
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
 }
 
-// 生成每日任务
+// 修复后的生成每日任务函数
 function generateTasks() {
-    if (!goal.value || total.value <= 0 || days.value <= 0) {
+    // 清理并强制转换为数字
+    const goalStr = String(goal.value).trim()
+    const totalNum = parseInt(total.value) || 0
+    const daysNum = parseInt(days.value) || 0
+
+
+    if (!goalStr || totalNum <= 0 || daysNum <= 0) {
         alert('请填写完整信息')
         return
     }
-    const daily = Math.floor(total.value / days.value)
-    const remainder = total.value % days.value
+
+    const daily = Math.floor(totalNum / daysNum)
+    const remainder = totalNum % daysNum
+
+
     tasks.value = []
-    for (let i = 0; i < days.value; i++) {
+    for (let i = 0; i < daysNum; i++) {
+        const count = i < remainder ? daily + 1 : daily
         tasks.value.push({
-            count: i < remainder ? daily + 1 : daily,
+            count: count,
             completed: false
         })
     }
+
+    // 验证总数是否正确
+    const totalCheck = tasks.value.reduce((sum, task) => sum + task.count, 0)
+
     today.value = getToday()
     saveData()
 }
+
 
 // 切换完成状态
 function toggleComplete(idx) {
@@ -150,7 +173,8 @@ onMounted(() => {
     box-shadow: 0 4px 24px rgba(80, 120, 200, 0.12);
 }
 
-h2, h3 {
+h2,
+h3 {
     color: #3a6ea5;
     margin-bottom: 18px;
     font-weight: 600;
@@ -172,6 +196,7 @@ input {
     outline: none;
     transition: border-color 0.2s;
 }
+
 input:focus {
     border-color: #3a6ea5;
 }
@@ -188,6 +213,7 @@ button {
     box-shadow: 0 2px 8px rgba(58, 110, 165, 0.08);
     transition: background 0.2s;
 }
+
 button:hover {
     background: #24548c;
 }
@@ -202,9 +228,27 @@ li {
     background: #f6fbff;
     border-radius: 6px;
     padding: 8px 12px;
-    box-shadow: 0 1px 4px rgba(80,120,200,0.04);
+    box-shadow: 0 1px 4px rgba(80, 120, 200, 0.04);
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.completed-btn {
+    background: #4caf50;
+    color: #fff;
+}
+
+.completed-btn:hover {
+    background: #388e3c !important;
+}
+
+.incomplete-btn {
+    background: #f44336;
+    color: #fff;
+}
+
+.incomplete-btn:hover {
+    background: #c62828 !important;
 }
 </style>
