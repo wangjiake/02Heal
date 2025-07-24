@@ -14,13 +14,8 @@ export default defineNuxtConfig({
 			},
 		],
 		"@nuxtjs/i18n",
-		'nuxt-gtag'
 	],
-	gtag: {
-		id: 'G-V40T838F5J', // 你的GA4测量ID
-		config: { anonymize_ip: true },
-		debug: false
-	},
+
 
 	compatibilityDate: "2025-04-21",
 
@@ -34,31 +29,12 @@ export default defineNuxtConfig({
 					name: "viewport",
 					content: "width=device-width, initial-scale=1",
 				},
-				// 添加 CSP meta 标签
-				{
-					"http-equiv": "Content-Security-Policy",
-					content: "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com;"
-				}
+		
 			],
 			templateParams: {
 				separator: "·",
 			},
 		},
-	},
-
-	// 或者使用 Nuxt 的 security 配置（推荐）
-	security: {
-		headers: {
-			contentSecurityPolicy: {
-				'script-src': [
-					"'self'",
-					"'unsafe-inline'",
-					"'unsafe-eval'",
-					"https://www.googletagmanager.com",
-					"https://www.google-analytics.com"
-				]
-			}
-		}
 	},
 
 	// i18n 配置
