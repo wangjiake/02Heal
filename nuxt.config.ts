@@ -34,11 +34,31 @@ export default defineNuxtConfig({
 					name: "viewport",
 					content: "width=device-width, initial-scale=1",
 				},
+				// 添加 CSP meta 标签
+				{
+					"http-equiv": "Content-Security-Policy",
+					content: "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com;"
+				}
 			],
 			templateParams: {
 				separator: "·",
 			},
 		},
+	},
+
+	// 或者使用 Nuxt 的 security 配置（推荐）
+	security: {
+		headers: {
+			contentSecurityPolicy: {
+				'script-src': [
+					"'self'",
+					"'unsafe-inline'",
+					"'unsafe-eval'",
+					"https://www.googletagmanager.com",
+					"https://www.google-analytics.com"
+				]
+			}
+		}
 	},
 
 	// i18n 配置
@@ -72,6 +92,4 @@ export default defineNuxtConfig({
 		port: 7812, // 服务器端口
 		host: "0.0.0.0", // This allows access from any IP
 	},
-
-
 });
