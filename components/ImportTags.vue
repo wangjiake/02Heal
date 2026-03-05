@@ -1,73 +1,59 @@
 <!-- components/ImportTags.vue -->
 <template>
-    <div class="py-4">
-        <h2 class="text-xl font-semibold mb-4">{{ $t('导入标签') }}</h2>
+    <div class="card p-5 sm:p-6">
+        <h2 class="section-title mb-5">{{ $t('导入标签') }}</h2>
 
-        <div class="mb-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-            <!-- 文本导入 -->
-            <div class="mb-4">
-                <label class="block text-gray-700 font-medium mb-2">{{ $t('粘贴标签数据') }}</label>
-                <textarea v-model="importText" class="w-full h-48 border border-gray-300 rounded-lg p-3 text-sm"
+        <div class="space-y-4">
+            <div>
+                <label class="form-label">{{ $t('粘贴标签数据') }}</label>
+                <textarea v-model="importText"
+                    class="input-modern !h-48 resize-none"
                     :placeholder="$t('粘贴食物数据...')"></textarea>
-                <p class="text-xs text-gray-500 mt-1">{{ $t('格式示例') }}</p>
+                <p class="text-xs text-slate-400 mt-1.5">{{ $t('格式示例') }}</p>
             </div>
 
-            <!-- 导入选项 -->
-            <div class="mb-4">
-                <div class="flex items-center mb-2">
-                    <input type="checkbox" id="overwriteExisting" v-model="overwriteExisting" class="mr-2">
-                    <label for="overwriteExisting" class="text-sm text-gray-700">
-                        {{ $t('覆盖同名标签') }}
-                    </label>
-                </div>
+            <div>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" v-model="overwriteExisting"
+                        class="w-4 h-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/20" />
+                    <span class="text-sm text-slate-600">{{ $t('覆盖同名标签') }}</span>
+                </label>
             </div>
 
-            <!-- 按钮组 -->
-            <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                <button
-                    class="bg-gray-100 text-gray-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-200 transition"
-                    @click="exportAllTags">
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button class="btn-secondary w-full sm:w-auto" @click="exportAllTags">
                     {{ $t('导出标签') }}
                 </button>
-                <button
-                    class="bg-gray-100 text-gray-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-200 transition"
-                    @click="clearText">
+                <button class="btn-secondary w-full sm:w-auto" @click="clearText">
                     {{ $t('清空') }}
                 </button>
-                <button
-                    class="bg-blue-500 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-600 transition"
-                    @click="importTags">
+                <button class="btn-primary w-full sm:w-auto" @click="importTags">
                     {{ $t('导入标签') }}
                 </button>
             </div>
         </div>
 
         <!-- 导入结果提示 -->
-        <div v-if="importResult" :class="[
-            importResult.success ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800',
-            'p-4 rounded-lg border mb-4'
-        ]">
-            <div class="flex">
-                <div v-if="importResult.success" class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div v-else class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                        fill="currentColor">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm font-medium">{{ importResult.message }}</p>
-                </div>
-            </div>
+        <div v-if="importResult" class="mt-5 p-4 rounded-xl flex items-start gap-3"
+            :class="importResult.success
+                ? 'bg-emerald-50 border border-emerald-200'
+                : 'bg-rose-50 border border-rose-200'">
+            <svg v-if="importResult.success" class="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5"
+                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd" />
+            </svg>
+            <svg v-else class="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5"
+                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clip-rule="evenodd" />
+            </svg>
+            <p class="text-sm font-medium"
+                :class="importResult.success ? 'text-emerald-800' : 'text-rose-800'">
+                {{ importResult.message }}
+            </p>
         </div>
     </div>
 </template>
@@ -75,7 +61,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { getVisibleFoodTags, saveVisibleFoodTags } from '~/utils/storage';
+import { getVisibleFoodTags, saveVisibleFoodTags, getFoodTags, saveFoodTags } from '~/utils/storage';
+import { getFixedTags } from '~/utils/constants';
 
 const { t } = useI18n();
 
@@ -152,18 +139,11 @@ const importTags = () => {
                     ? parsedData
                     : [parsedData];
             } catch (e) {
-                try {
-                    const evalResult = new Function('return ' + importText.value)();
-                    tagsToImport = Array.isArray(evalResult)
-                        ? evalResult
-                        : [evalResult];
-                } catch (evalError) {
-                    importResult.value = {
-                        success: false,
-                        message: t('数据解析失败，请检查格式')
-                    };
-                    return;
-                }
+                importResult.value = {
+                    success: false,
+                    message: t('数据解析失败，请检查格式')
+                };
+                return;
             }
         }
 
@@ -232,32 +212,9 @@ const importTags = () => {
             ];
         }
 
-        // ✅ 保存用户标签（供标签管理使用）
         saveFoodTags(updatedTags);
 
-        // ✅ 构建可见标签列表（系统标签 + 用户标签）
-        const fixedTags = [
-            {
-                name: t('鸡蛋'),
-                calories: 72,
-                protein: 6.3,
-                fat: 4.8,
-                carbs: 0.6,
-                visible: true,
-                fixed: true,
-                createdAt: new Date().toISOString(),
-            },
-            {
-                name: t('香蕉'),
-                calories: 105,
-                protein: 1.3,
-                fat: 0.4,
-                carbs: 27,
-                visible: true,
-                fixed: true,
-                createdAt: new Date().toISOString(),
-            }
-        ];
+        const fixedTags = getFixedTags();
 
         const visibleTags = [...fixedTags, ...updatedTags].filter(tag => tag.visible !== false);
         saveVisibleFoodTags(visibleTags);
@@ -275,5 +232,4 @@ const importTags = () => {
         };
     }
 };
-
 </script>

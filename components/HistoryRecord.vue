@@ -1,16 +1,16 @@
 <!-- components/HistoryRecords.vue -->
 <template>
-    <div class="p-4 bg-white rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">{{ $t("历史记录") }}</h2>
+    <div class="card p-5 sm:p-6">
+        <h2 class="section-title mb-5">{{ $t("历史记录") }}</h2>
 
         <!-- 日期选择器 -->
-        <div class="mb-4">
+        <div class="mb-6">
             <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <button v-for="(date, index) in dateOptions" :key="index" @click="selectDate(date.value)"
-                    class="px-3 py-1.5 rounded-full text-sm whitespace-nowrap" :class="selectedDate === date.value
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-100 text-gray-700'
-                        ">
+                    class="rounded-xl px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-200"
+                    :class="selectedDate === date.value
+                        ? 'bg-brand-600 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-white hover:text-slate-800 hover:shadow-card'">
                     {{ date.label }}
                 </button>
             </div>
@@ -18,75 +18,80 @@
 
         <!-- 加载状态 -->
         <div v-if="loading" class="py-12 flex justify-center">
-            <div class="animate-pulse text-gray-400">{{ $t("加载中...") }}</div>
+            <div class="animate-pulse text-slate-400 text-sm">{{ $t("加载中...") }}</div>
         </div>
 
         <!-- 无数据状态 -->
-        <div v-else-if="currentRecords.length === 0" class="py-8 text-center text-gray-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-3 text-gray-300" fill="none"
+        <div v-else-if="currentRecords.length === 0" class="py-12 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-3 text-slate-200" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                     d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <p>{{ $t("这个时间段没有记录") }}</p>
+            <p class="text-slate-400 text-sm">{{ $t("这个时间段没有记录") }}</p>
         </div>
 
         <!-- 数据展示 -->
         <div v-else>
-            <!-- 日期分组显示 -->
             <div v-for="(group, date) in groupedRecords" :key="date" class="mb-6">
-                <h3 class="text-md font-semibold mb-2 text-gray-700 border-l-4 border-blue-500 pl-2">
-                    {{ formatDateHeader(date) }}
-                </h3>
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-1 h-5 rounded-full bg-brand-500"></div>
+                    <h3 class="text-sm font-semibold text-slate-700">
+                        {{ formatDateHeader(date) }}
+                    </h3>
+                </div>
 
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <div v-for="(record, index) in group" :key="index"
-                        class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="font-medium">
+                        class="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-slate-800 truncate">
                                     {{ record.name || $t("未命名食物") }}
                                 </p>
-                                <p class="text-xs text-gray-500 mt-1">
+                                <p class="text-xs text-slate-400 mt-0.5">
                                     {{ formatTime(record.addedAt) }}
                                 </p>
                             </div>
-                            <div class="flex space-x-2">
+                            <div class="flex items-center gap-1 flex-shrink-0">
                                 <button @click="editRecord(record, date)"
-                                    class="text-blue-500 hover:text-blue-700 focus:outline-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                     </svg>
                                 </button>
                                 <button @click="removeRecord(record, date)"
-                                    class="text-red-500 hover:text-red-700 focus:outline-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M3 6h18"></path>
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
                                     </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-x-4 gap-y-1 mt-3 text-xs">
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 rounded-full bg-orange-500 mr-1"></div>
-                                <span>{{ $t("卡路里") }}: {{ record.calories }}kcal</span>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1 mt-2.5 text-xs">
+                            <div class="flex items-center gap-1.5">
+                                <div class="nutrition-dot-amber"></div>
+                                <span class="text-slate-600">{{ $t("卡路里") }}: {{ record.calories }}kcal</span>
                             </div>
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
-                                <span>{{ $t("蛋白质") }}: {{ record.protein }}g</span>
+                            <div class="flex items-center gap-1.5">
+                                <div class="nutrition-dot-emerald"></div>
+                                <span class="text-slate-600">{{ $t("蛋白质") }}: {{ record.protein }}g</span>
                             </div>
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 rounded-full bg-yellow-400 mr-1"></div>
-                                <span>{{ $t("脂肪") }}: {{ record.fat }}g</span>
+                            <div class="flex items-center gap-1.5">
+                                <div class="nutrition-dot-violet"></div>
+                                <span class="text-slate-600">{{ $t("脂肪") }}: {{ record.fat }}g</span>
                             </div>
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 rounded-full bg-blue-400 mr-1"></div>
-                                <span>{{ $t("碳水") }}: {{ record.carbs }}g</span>
+                            <div class="flex items-center gap-1.5">
+                                <div class="nutrition-dot-sky"></div>
+                                <span class="text-slate-600">{{ $t("碳水") }}: {{ record.carbs }}g</span>
                             </div>
                         </div>
                     </div>
@@ -94,24 +99,24 @@
             </div>
 
             <!-- 总计摘要 -->
-            <div class="mt-4 pt-4 border-t border-gray-200">
-                <p class="font-bold mb-2">{{ $t("时间段总计") }}:</p>
+            <div class="mt-6 p-4 rounded-xl bg-brand-50 border border-brand-100">
+                <p class="text-sm font-semibold text-brand-800 mb-2">{{ $t("时间段总计") }}</p>
                 <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 rounded-full bg-orange-500 mr-2"></div>
-                        <span>{{ $t("卡路里") }}: {{ periodTotals.calories }}kcal</span>
+                    <div class="flex items-center gap-1.5">
+                        <div class="nutrition-dot-amber"></div>
+                        <span class="text-brand-700">{{ $t("卡路里") }}: {{ periodTotals.calories }}kcal</span>
                     </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                        <span>{{ $t("蛋白质") }}: {{ periodTotals.protein }}g</span>
+                    <div class="flex items-center gap-1.5">
+                        <div class="nutrition-dot-emerald"></div>
+                        <span class="text-brand-700">{{ $t("蛋白质") }}: {{ periodTotals.protein }}g</span>
                     </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 rounded-full bg-yellow-400 mr-2"></div>
-                        <span>{{ $t("脂肪") }}: {{ periodTotals.fat }}g</span>
+                    <div class="flex items-center gap-1.5">
+                        <div class="nutrition-dot-violet"></div>
+                        <span class="text-brand-700">{{ $t("脂肪") }}: {{ periodTotals.fat }}g</span>
                     </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
-                        <span>{{ $t("碳水") }}: {{ periodTotals.carbs }}g</span>
+                    <div class="flex items-center gap-1.5">
+                        <div class="nutrition-dot-sky"></div>
+                        <span class="text-brand-700">{{ $t("碳水") }}: {{ periodTotals.carbs }}g</span>
                     </div>
                 </div>
             </div>
@@ -119,39 +124,35 @@
     </div>
 
     <!-- 编辑记录弹窗 -->
-    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg w-full max-w-md p-4">
-            <h3 class="text-lg font-bold mb-4">{{ $t("编辑食物记录") }}</h3>
+    <div v-if="showEditModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-elevated">
+            <h3 class="section-title mb-5">{{ $t("编辑食物记录") }}</h3>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ $t("食物名称") }}
-                </label>
-                <input type="text" v-model="editingRecord.name"
-                    class="block w-full px-3 py-2 border border-gray-300 rounded-md" />
-            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">{{ $t("食物名称") }}</label>
+                    <input type="text" v-model="editingRecord.name" class="input-modern" />
+                </div>
 
-            <div v-for="item in editingNutrition" :key="item.key" class="mb-3">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ item.title }}
-                </label>
-                <div class="relative rounded-md shadow-sm">
-                    <input type="text" inputmode="decimal" v-model="item.value" @input="formatEditNumber(item)"
-                        class="block w-full pl-3 pr-12 py-2 border border-gray-300 rounded-md" />
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <span class="text-gray-500 sm:text-sm">
-                            {{ item.key === "calories" ? "kcal" : "g" }}
-                        </span>
+                <div v-for="item in editingNutrition" :key="item.key">
+                    <label class="form-label">{{ item.title }}</label>
+                    <div class="relative">
+                        <input type="text" inputmode="decimal" v-model="item.value"
+                            @input="formatEditNumber(item)" class="input-modern pr-14" />
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <span class="text-slate-400 text-sm">
+                                {{ item.key === "calories" ? "kcal" : "g" }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="flex space-x-3 mt-6">
-                <button @click="saveEdit" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+            <div class="flex gap-3 mt-6">
+                <button @click="saveEdit" class="btn-primary flex-1">
                     {{ $t("保存") }}
                 </button>
-                <button @click="cancelEdit"
-                    class="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                <button @click="cancelEdit" class="btn-secondary flex-1">
                     {{ $t("取消") }}
                 </button>
             </div>
@@ -160,18 +161,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from "vue";
+import { ref, computed, onMounted } from "vue";
 import {
     getFoodsByDate,
     saveFoodsByDate,
     updateRemainingNutrition,
     getTodayDateString,
+    calculateDailyTotals,
 } from "../utils/storage";
+import { formatNumberInput } from "../utils/format";
 import { useI18n } from "vue-i18n";
+import { useToast } from "../composables/useToast";
 
 const { t } = useI18n();
-// 尝试注入 toast 服务
-const toast = inject("toast", null);
+const toast = useToast();
 
 // 响应式数据
 const loading = ref(true);
@@ -199,27 +202,21 @@ const getDateRange = (option) => {
 
     switch (option) {
         case "today":
-            // 只显示今天
             break;
         case "yesterday":
-            // 只显示昨天
             startDate.setDate(today.getDate() - 1);
             endDate.setDate(today.getDate() - 1);
             break;
         case "week":
-            // 显示过去7天
             startDate.setDate(today.getDate() - 6);
             break;
         case "month":
-            // 显示过去30天
             startDate.setDate(today.getDate() - 29);
             break;
         case "all":
-            // 显示所有记录（假设最多90天）
             startDate.setDate(today.getDate() - 89);
             break;
         default:
-            // 默认显示过去7天
             startDate.setDate(today.getDate() - 6);
     }
 
@@ -234,7 +231,6 @@ const loadRecords = async () => {
     const { startDate, endDate } = getDateRange(selectedDate.value);
     const dateArray = getDatesArray(startDate, endDate);
 
-    // 按顺序为每个日期加载记录
     for (const date of dateArray) {
         const dateString = formatDate(date);
         const dayRecords = getFoodsByDate(dateString);
@@ -328,7 +324,6 @@ const periodTotals = computed(() => {
         { calories: 0, protein: 0, fat: 0, carbs: 0 }
     );
 
-    // Format with two decimal places
     return {
         calories: totals.calories.toFixed(2),
         protein: totals.protein.toFixed(2),
@@ -342,7 +337,6 @@ const editRecord = (record, date) => {
     editingRecord.value = { ...record };
     editingDate.value = date;
 
-    // 设置编辑表单的营养值
     editingNutrition.value = [
         { title: t('卡路里'), value: record.calories.toString(), key: "calories" },
         {
@@ -357,28 +351,10 @@ const editRecord = (record, date) => {
     showEditModal.value = true;
 };
 
-// 格式化编辑时的数字输入
-const formatEditNumber = (item) => {
-    // 如果不是数字格式，转换为有效数字或清空
-    if (item.value && isNaN(parseFloat(item.value))) {
-        item.value = "";
-    }
-
-    // 移除非数字和非小数点字符
-    if (item.value) {
-        item.value = item.value.replace(/[^\d.]/g, "");
-
-        // 确保只有一个小数点
-        const parts = item.value.split(".");
-        if (parts.length > 2) {
-            item.value = parts[0] + "." + parts.slice(1).join("");
-        }
-    }
-};
+const formatEditNumber = formatNumberInput;
 
 // 保存编辑
 const saveEdit = () => {
-    // 更新记录数据
     editingRecord.value.name = editingRecord.value.name || t('未命名食物');
     editingRecord.value.calories =
         parseFloat(
@@ -393,7 +369,6 @@ const saveEdit = () => {
         parseFloat(editingNutrition.value.find((i) => i.key === "carbs").value) ||
         0;
 
-    // 找到并更新原始记录
     const dateRecords = records.value[editingDate.value];
     const recordIndex = dateRecords.findIndex(
         (r) => r.addedAt === editingRecord.value.addedAt
@@ -402,38 +377,16 @@ const saveEdit = () => {
     if (recordIndex !== -1) {
         dateRecords[recordIndex] = { ...editingRecord.value };
 
-        // 保存回存储
         saveFoodsByDate(editingDate.value, dateRecords);
 
-        // 如果是今天的记录，更新剩余目标
         if (editingDate.value === getTodayDateString()) {
-            // 重新计算今日总计
             const todayRecords = records.value[getTodayDateString()] || [];
-            const todayTotals = todayRecords.reduce(
-                (totals, food) => {
-                    return {
-                        calories: totals.calories + parseFloat(food.calories || 0),
-                        protein: totals.protein + parseFloat(food.protein || 0),
-                        fat: totals.fat + parseFloat(food.fat || 0),
-                        carbs: totals.carbs + parseFloat(food.carbs || 0),
-                    };
-                },
-                { calories: 0, protein: 0, fat: 0, carbs: 0 }
-            );
-
-            // 更新剩余目标
-            updateRemainingNutrition(todayTotals);
+            updateRemainingNutrition(calculateDailyTotals(todayRecords));
         }
 
-        // 显示成功提示
-        if (toast) {
-            toast.success(t('记录已更新!'));
-        } else if (window.$toast) {
-            window.$toast.success(t('记录已更新!'));
-        }
+        toast.success(t('记录已更新!'));
     }
 
-    // 关闭弹窗
     cancelEdit();
 };
 
@@ -447,65 +400,38 @@ const cancelEdit = () => {
 
 // 删除记录
 const removeRecord = (record, date) => {
-    // 找到记录
     const dateRecords = records.value[date];
     const recordIndex = dateRecords.findIndex(
         (r) => r.addedAt === record.addedAt
     );
 
     if (recordIndex !== -1) {
-        // 从数组中删除
         dateRecords.splice(recordIndex, 1);
 
-        // 如果日期没有记录了，从记录对象中删除此日期
         if (dateRecords.length === 0) {
             delete records.value[date];
         } else {
-            // 否则更新此日期的记录
             records.value[date] = dateRecords;
         }
 
-        // 保存回存储
         saveFoodsByDate(date, dateRecords);
 
-        // 如果是今天的记录，更新剩余目标
         if (date === getTodayDateString()) {
-            // 重新计算今日总计
             const todayRecords = records.value[getTodayDateString()] || [];
-            const todayTotals = todayRecords.reduce(
-                (totals, food) => {
-                    return {
-                        calories: totals.calories + parseFloat(food.calories || 0),
-                        protein: totals.protein + parseFloat(food.protein || 0),
-                        fat: totals.fat + parseFloat(food.fat || 0),
-                        carbs: totals.carbs + parseFloat(food.carbs || 0),
-                    };
-                },
-                { calories: 0, protein: 0, fat: 0, carbs: 0 }
-            );
-
-            // 更新剩余目标
-            updateRemainingNutrition(todayTotals);
+            updateRemainingNutrition(calculateDailyTotals(todayRecords));
         }
 
-        // 显示成功提示
-        if (toast) {
-            toast.success(t('记录已删除!'));
-        } else if (window.$toast) {
-            window.$toast.success(t('记录已删除!'));
-        }
+        toast.success(t('记录已删除!'));
     }
 };
 
 // 组件挂载时
 onMounted(() => {
-    // 加载记录
     loadRecords();
 });
 </script>
 
 <style scoped>
-/* 隐藏滚动条但保留滚动功能 */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }

@@ -1,11 +1,7 @@
 <template>
-    <div class="h-full bg-gray-50">
-        <!-- 主要内容 -->
-        <div class="w-full max-w-4xl mx-auto">
-
-            <main class="max-w-3xl mx-auto p-8 flex-grow">
-                <slot />
-            </main>
-        </div>
+    <div class="min-h-screen bg-slate-50">
+        <main class="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+            <slot />
+        </main>
     </div>
 </template>

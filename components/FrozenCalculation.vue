@@ -1,307 +1,120 @@
 <!-- components/FrozenCalculation.vue -->
 <template>
-    <div class="p-4 bg-white rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">{{ $t("冷冻食物计算") }}</h2>
+    <div class="card p-5 sm:p-6">
+        <h2 class="section-title mb-5">{{ $t("冷冻食物计算") }}</h2>
 
-        <!-- 保存的配置下拉列表 -->
+        <!-- Saved configs dropdown -->
         <div class="mb-6">
-            <label
-                id="saved-config-label"
-                class="block text-sm font-medium text-gray-700 mb-1"
-            >
-                {{ $t("选择保存的配置") }}
-            </label>
+            <label id="saved-config-label" class="form-label">{{ $t("选择保存的配置") }}</label>
             <div class="flex gap-3">
-                <div class="relative w-full">
-                    <button
-                        type="button"
-                        @click="toggleDropdown"
-                        class="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-3 pl-3 text-left text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg h-[54px]"
-                        aria-haspopup="listbox"
-                        :aria-expanded="isOpen ? 'true' : 'false'"
-                        aria-labelledby="saved-config-label"
-                    >
-                        <span
-                            class="col-start-1 row-start-1 flex items-center pr-6 truncate"
-                        >
-                            <span class="block truncate">{{
-                                selectedConfigName || $t("选择配置")
-                            }}</span>
-                        </span>
-                        <svg
-                            class="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-500 mr-2"
-                            viewBox="0 0 16 16"
-                            fill="currentColor"
-                            aria-hidden="true"
-                            data-slot="icon"
-                        >
-                            <path
-                                fill-rule="evenodd"
-                                d="M5.22 10.22a.75.75 0 0 1 1.06 0L8 11.94l1.72-1.72a.75.75 0 1 1 1.06 1.06l-2.25 2.25a.75.75 0 0 1-1.06 0l-2.25-2.25a.75.75 0 0 1 0-1.06ZM10.78 5.78a.75.75 0 0 1-1.06 0L8 4.06 6.28 5.78a.75.75 0 0 1-1.06-1.06l2.25-2.25a.75.75 0 0 1 1.06 0l2.25 2.25a.75.75 0 0 1 0 1.06Z"
-                                clip-rule="evenodd"
-                            />
+                <div ref="dropdownRef" class="relative w-full">
+                    <button type="button" @click="toggleDropdown"
+                        class="input-modern flex items-center justify-between cursor-pointer"
+                        aria-haspopup="listbox" :aria-expanded="isOpen ? 'true' : 'false'"
+                        aria-labelledby="saved-config-label">
+                        <span class="truncate">{{ selectedConfigName || $t("选择配置") }}</span>
+                        <svg class="w-5 h-5 text-slate-400 flex-shrink-0" viewBox="0 0 16 16" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.22 10.22a.75.75 0 0 1 1.06 0L8 11.94l1.72-1.72a.75.75 0 1 1 1.06 1.06l-2.25 2.25a.75.75 0 0 1-1.06 0l-2.25-2.25a.75.75 0 0 1 0-1.06ZM10.78 5.78a.75.75 0 0 1-1.06 0L8 4.06 6.28 5.78a.75.75 0 0 1-1.06-1.06l2.25-2.25a.75.75 0 0 1 1.06 0l2.25 2.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
                         </svg>
                     </button>
 
-                    <!-- 下拉菜单 -->
-                    <ul
-                        v-if="isOpen"
-                        class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-hidden sm:text-sm"
-                        tabindex="-1"
-                        role="listbox"
-                        aria-labelledby="saved-config-label"
-                        :aria-activedescendant="
-                            selectedConfigId
-                                ? `config-option-${selectedConfigId}`
-                                : ''
-                        "
-                    >
-                        <!-- 空选项 -->
-                        <li
-                            class="relative cursor-default py-2 pl-3 pr-9 text-gray-900 select-none hover:bg-indigo-600 hover:text-white"
-                            id="config-option-empty"
-                            role="option"
-                            @click="selectConfig('', '')"
-                            :class="{
-                                'bg-indigo-600 text-white':
-                                    selectedConfigId === '',
-                            }"
-                        >
-                            <div class="flex items-center">
-                                <span class="block truncate font-normal"
-                                    >{{ $t("选择配置") }}</span
-                                >
-                            </div>
-                            <span
-                                v-if="selectedConfigId === ''"
-                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-white"
-                            >
-                                <svg
-                                    class="size-5"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                    aria-hidden="true"
-                                    data-slot="icon"
-                                >
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
-                            </span>
+                    <ul v-if="isOpen"
+                        class="absolute z-10 mt-2 max-h-56 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-elevated border border-slate-100"
+                        tabindex="-1" role="listbox">
+                        <li class="relative cursor-pointer py-2.5 px-4 text-slate-700 select-none hover:bg-brand-50 hover:text-brand-700 rounded-lg mx-1"
+                            role="option" @click="selectConfig('', '')"
+                            :class="{ 'bg-brand-50 text-brand-700 font-medium': selectedConfigId === '' }">
+                            {{ $t("选择配置") }}
                         </li>
-
-                        <!-- 配置选项 -->
-                        <li
-                            v-for="config in savedConfigurations"
-                            :key="config.id"
-                            class="relative cursor-default py-2 pl-3 pr-9 text-gray-900 select-none hover:bg-indigo-600 hover:text-white"
-                            :id="`config-option-${config.id}`"
-                            role="option"
-                            @click="selectConfig(config.id, config.name)"
-                            :class="{
-                                'bg-indigo-600 text-white':
-                                    selectedConfigId === config.id,
-                            }"
-                        >
-                            <div class="flex items-center">
-                                <span
-                                    class="block truncate"
-                                    :class="
-                                        selectedConfigId === config.id
-                                            ? 'font-semibold'
-                                            : 'font-normal'
-                                    "
-                                >
-                                    {{ config.name }}
-                                </span>
-                            </div>
-                            <span
-                                v-if="selectedConfigId === config.id"
-                                class="absolute inset-y-0 right-0 flex items-center pr-4"
-                                :class="
-                                    selectedConfigId === config.id
-                                        ? 'text-white'
-                                        : 'text-indigo-600'
-                                "
-                            >
-                                <svg
-                                    class="size-5"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                    aria-hidden="true"
-                                    data-slot="icon"
-                                >
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
-                            </span>
+                        <li v-for="config in savedConfigurations" :key="config.id"
+                            class="relative cursor-pointer py-2.5 px-4 text-slate-700 select-none hover:bg-brand-50 hover:text-brand-700 rounded-lg mx-1"
+                            role="option" @click="selectConfig(config.id, config.name)"
+                            :class="{ 'bg-brand-50 text-brand-700 font-medium': selectedConfigId === config.id }">
+                            {{ config.name }}
                         </li>
                     </ul>
                 </div>
-                <button
-                    v-if="selectedConfigId"
-                    @click="deleteConfiguration"
-                    class="px-4 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 h-[54px] whitespace-nowrap text-xs sm:text-sm md:text-base"
-                >
+                <button v-if="selectedConfigId" @click="deleteConfiguration" class="btn-danger whitespace-nowrap">
                     {{ $t("删除配置") }}
                 </button>
             </div>
         </div>
 
         <form @submit.prevent="calculateAndAddFood" class="space-y-4">
-            <!-- 食物名称 -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ $t("食物名称") }}
-                </label>
-                <input
-                    type="text"
-                    v-model="foodName"
-                    class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    :placeholder="$t('例如: 煎鸡胸肉')"
-                />
+            <div>
+                <label class="form-label">{{ $t("食物名称") }}</label>
+                <input type="text" v-model="foodName" class="input-modern" :placeholder="$t('例如: 煎鸡胸肉')" />
             </div>
 
-            <!-- 基本营养素 -->
-            <div
-                v-for="(item, index) in nutritionValues"
-                :key="index"
-                class="mb-4"
-            >
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ item.title }}
-                </label>
-                <div class="relative rounded-md shadow-sm">
-                    <input
-                        type="text"
-                        inputmode="decimal"
-                        v-model="item.value"
-                        @input="formatNumber(item)"
-                        class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    />
-                    <div
-                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
-                        <span class="text-gray-500 sm:text-sm">
-                            {{ item.key === "calories" ? "kcal" : "g" }}
-                        </span>
+            <div v-for="(item, index) in nutritionValues" :key="index">
+                <label class="form-label">{{ item.title }}</label>
+                <div class="relative">
+                    <input type="text" inputmode="decimal" v-model="item.value" @input="formatNumber(item)" class="input-modern pr-14" />
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <span class="text-slate-400 text-sm">{{ item.key === "calories" ? "kcal" : "g" }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- 重量和损失率 -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ $t("原始重量") }} (g)
-                    </label>
-                    <div class="relative rounded-md shadow-sm">
-                        <input
-                            type="text"
-                            inputmode="decimal"
-                            v-model="weight"
-                            @input="formatWeightInput"
-                            class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                        />
-                        <div
-                            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                        >
-                            <span class="text-gray-500 sm:text-sm">g</span>
+                    <label class="form-label">{{ $t("原始重量") }} (g)</label>
+                    <div class="relative">
+                        <input type="text" inputmode="decimal" v-model="weight" @input="formatWeightInput" class="input-modern pr-14" />
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <span class="text-slate-400 text-sm">g</span>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ $t("损失率") }} (%)
-                    </label>
-                    <div class="relative rounded-md shadow-sm">
-                        <input
-                            type="text"
-                            inputmode="decimal"
-                            v-model="lossRate"
-                            @input="formatLossRateInput"
-                            class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                        />
-                        <div
-                            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                        >
-                            <span class="text-gray-500 sm:text-sm">%</span>
+                    <label class="form-label">{{ $t("损失率") }} (%)</label>
+                    <div class="relative">
+                        <input type="text" inputmode="decimal" v-model="lossRate" @input="formatLossRateInput" class="input-modern pr-14" />
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <span class="text-slate-400 text-sm">%</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 计算结果 -->
-            <div class="mt-6 p-4 bg-gray-100 rounded-lg">
-                <h3 class="text-md font-bold mb-2">{{ $t("计算结果") }}:</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-sm text-gray-700">{{ $t("冷冻后重量") }}:</p>
-                        <p class="text-lg font-medium">{{ finalWeight }}g</p>
+            <!-- Results -->
+            <div class="mt-2 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <h3 class="text-sm font-semibold text-slate-700 mb-3">{{ $t("计算结果") }}</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div class="text-center p-2">
+                        <p class="text-xs text-slate-500">{{ $t("冷冻后重量") }}</p>
+                        <p class="text-lg font-bold text-slate-800">{{ finalWeight }}g</p>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-700">{{ $t("卡路里") }}:</p>
-                        <p class="text-lg font-medium">
-                            {{ finalNutrition.calories }}kcal
-                        </p>
+                    <div class="text-center p-2">
+                        <p class="text-xs text-slate-500">{{ $t("卡路里") }}</p>
+                        <p class="text-lg font-bold text-amber-600">{{ finalNutrition.calories }} kcal</p>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-700">{{ $t("蛋白质") }}:</p>
-                        <p class="text-lg font-medium">
-                            {{ finalNutrition.protein }}g
-                        </p>
+                    <div class="text-center p-2">
+                        <p class="text-xs text-slate-500">{{ $t("蛋白质") }}</p>
+                        <p class="text-lg font-bold text-emerald-600">{{ finalNutrition.protein }}g</p>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-700">{{ $t("脂肪") }}:</p>
-                        <p class="text-lg font-medium">
-                            {{ finalNutrition.fat }}g
-                        </p>
+                    <div class="text-center p-2">
+                        <p class="text-xs text-slate-500">{{ $t("脂肪") }}</p>
+                        <p class="text-lg font-bold text-violet-600">{{ finalNutrition.fat }}g</p>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-700">{{ $t("碳水") }}:</p>
-                        <p class="text-lg font-medium">
-                            {{ finalNutrition.carbs }}g
-                        </p>
+                    <div class="text-center p-2">
+                        <p class="text-xs text-slate-500">{{ $t("碳水") }}</p>
+                        <p class="text-lg font-bold text-sky-600">{{ finalNutrition.carbs }}g</p>
                     </div>
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                <!-- 计算和添加按钮 -->
-                <button
-                    type="submit"
-                    class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                >
-                    {{ $t("计算并添加食物") }}
-                </button>
-                <!-- 保存配置按钮 -->
-                <button
-                    type="button"
-                    @click="saveConfiguration"
-                    class="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                    {{ $t("保存当前配置") }}
-                </button>
-                <!-- 清空表单按钮 -->
-                <button
-                    type="button"
-                    @click="resetForm"
-                    class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                >
-                    {{ $t("清空表单") }}
-                </button>
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="submit" class="btn-success w-full sm:w-auto">{{ $t("计算并添加食物") }}</button>
+                <button type="button" @click="saveConfiguration" class="btn-primary w-full sm:w-auto">{{ $t("保存当前配置") }}</button>
+                <button type="button" @click="resetForm" class="btn-secondary w-full sm:w-auto">{{ $t("清空表单") }}</button>
             </div>
         </form>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, inject, watch } from "vue";
 import {
     getFrozenFoodConfigurations,
     saveFrozenFoodConfigurations,
@@ -309,11 +122,12 @@ import {
     calculateFinalNutrition,
     addFrozenFood,
 } from "../utils/storage";
+import { formatNumberInput, formatRefNumberInput } from "../utils/format";
 import { useI18n } from 'vue-i18n'
+import { useToast } from "../composables/useToast";
 
 const { t } = useI18n()
-// 尝试注入 toast 服务
-const toast = inject("toast", null);
+const toast = useToast();
 
 // 响应式数据
 const foodName = ref("");
@@ -362,9 +176,9 @@ const selectConfig = (id, name) => {
 };
 
 // 点击外部关闭下拉菜单
+const dropdownRef = ref(null);
 const handleClickOutside = (event) => {
-    const dropdownEl = document.querySelector(".relative");
-    if (dropdownEl && !dropdownEl.contains(event.target)) {
+    if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
         isOpen.value = false;
     }
 };
@@ -571,40 +385,20 @@ const isFormValid = () => {
     return true;
 };
 
-// 格式化数字，确保输入有效
-const formatNumber = (item) => {
-    // 如果不是数字格式，转换为有效数字或清空
-    if (item.value && isNaN(parseFloat(item.value))) {
-        item.value = "";
-    }
-
-    // 移除非数字和非小数点字符
-    if (item.value) {
-        item.value = item.value.replace(/[^\d.]/g, "");
-
-        // 确保只有一个小数点
-        const parts = item.value.split(".");
-        if (parts.length > 2) {
-            item.value = parts[0] + "." + parts.slice(1).join("");
-        }
-    }
-};
+const formatNumber = formatNumberInput;
 
 // 格式化重量输入
 const formatWeightInput = () => {
-    formatNumber({ value: weight.value });
+    formatRefNumberInput(weight);
 };
 
 // 格式化损失率输入
 const formatLossRateInput = () => {
-    formatNumber({ value: lossRate.value });
+    formatRefNumberInput(lossRate);
 
-    // 确保损失率在合理范围内 (0-100)
     const lossRateValue = parseFloat(lossRate.value);
-    if (!isNaN(lossRateValue)) {
-        if (lossRateValue > 100) {
-            lossRate.value = "100";
-        }
+    if (!isNaN(lossRateValue) && lossRateValue > 100) {
+        lossRate.value = "100";
     }
 };
 
@@ -622,21 +416,8 @@ const resetForm = () => {
     });
 };
 
-// 显示提示
 const showToast = (message, type = "success") => {
-    if (toast) {
-        if (type === "success") {
-            toast.success(message);
-        } else if (type === "error") {
-            toast.error(message);
-        }
-    } else if (window.$toast) {
-        if (type === "success") {
-            window.$toast.success(message);
-        } else if (type === "error") {
-            window.$toast.error(message);
-        }
-    }
+    toast[type](message);
 };
 
 // 组件挂载时

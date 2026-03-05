@@ -1,41 +1,54 @@
 <!-- pages/index.vue -->
 <template>
-    <div class="p-4">
-        <div class="flex justify-end gap-2 mb-4">
-            <button v-for="locale in locales" :key="locale.code"
-                class="rounded-lg px-2 py-1 text-xs sm:text-sm hover:bg-gray-100 transition min-w-[80px] text-center"
-                :class="[
-                    locale.code === currentLocale.value
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-black border border-gray-300'
-                ]" @click="switchLocale(locale.code)">
-                {{ locale.label }}
-            </button>
+    <div>
+        <!-- Top bar -->
+        <div class="flex items-center justify-between mb-6">
+            <NuxtLink :to="localePath('/guide')"
+                class="text-sm text-slate-500 hover:text-brand-600 transition-colors flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                {{ $t('使用指南') }}
+            </NuxtLink>
+            <div class="flex gap-1.5">
+                <button v-for="locale in locales" :key="locale.code"
+                    class="rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200"
+                    :class="[
+                        locale.code === currentLocale
+                            ? 'bg-brand-600 text-white shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                    ]" @click="switchLocale(locale.code)">
+                    {{ locale.label }}
+                </button>
+            </div>
         </div>
 
-        <!-- ShowCard组件 -->
-        <div class="show-card-container" style="min-height: 200px">
+        <!-- Dashboard card -->
+        <div class="mb-8">
             <ShowCardComponent />
         </div>
 
-        <!-- 底部导航按钮 - 移除了外层div的mt-6 -->
-        <div>
-            <div class="flex flex-wrap gap-4 mt-6">
+        <!-- Tab navigation -->
+        <div class="mb-6">
+            <div class="flex flex-wrap gap-2">
                 <button v-for="(tab, index) in tabs" :key="index"
-                    class="rounded-xl px-5 py-2.5 text-xs sm:text-sm md:text-base whitespace-nowrap min-w-[100px] text-center font-medium"
+                    class="rounded-xl px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-200"
                     :class="[
                         activeTab === index
-                            ? 'bg-blue-300 text-[#1C1C1CFF] hover:bg-blue-300'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                            ? 'bg-brand-600 text-white shadow-sm'
+                            : 'bg-white text-slate-500 border border-slate-200 hover:text-slate-800 hover:border-slate-300'
                     ]" @click="activeTab = index">
                     {{ tab.name }}
                 </button>
             </div>
+        </div>
 
-            <!-- 组件内容区域 - 添加了最小高度和过渡效果 -->
-            <div class="mt-4 component-wrapper relative min-h-[300px]">
-                <component :is="tabs[activeTab].component" class="tab-content-transition" />
-            </div>
+        <!-- Tab content -->
+        <div class="min-h-[300px]">
+            <component :is="tabs[activeTab].component" />
         </div>
     </div>
 </template>
@@ -58,6 +71,7 @@ import { useRouter, useRoute, useLocalePath, useSwitchLocalePath } from '#import
 const { locale } = useI18n();
 const router = useRouter();
 const route = useRoute();
+const localePath = useLocalePath();
 const { t } = useI18n();
 // 支持的语言
 const locales = [

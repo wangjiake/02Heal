@@ -1,133 +1,84 @@
 <!-- components/PackagedCalculation.vue -->
 <template>
-    <div class="p-4 bg-white rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">{{ $t("袋装食品计算") }}</h2>
+    <div class="card p-5 sm:p-6">
+        <h2 class="section-title mb-5">{{ $t("袋装食品计算") }}</h2>
 
         <form @submit.prevent="calculateAndAddFood" class="space-y-4">
-            <!-- 食物名称 -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ $t("食物名称") }}
-                </label>
-                <input
-                    type="text"
-                    v-model="foodName"
-                    class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    :placeholder="$t('例如: 蛋白棒')"
-                />
+            <div>
+                <label class="form-label">{{ $t("食物名称") }}</label>
+                <input type="text" v-model="foodName" class="input-modern"
+                    :placeholder="$t('例如: 蛋白棒')" />
             </div>
 
-            <!-- 基本营养素 (每100g) -->
-            <div
-                v-for="(item, index) in nutritionValues"
-                :key="index"
-                class="mb-4"
-            >
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ item.title }}
-                </label>
-                <div class="relative rounded-md shadow-sm">
-                    <input
-                        type="text"
-                        inputmode="decimal"
-                        v-model="item.value"
-                        @input="formatNumber(item)"
-                        class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    />
-                    <div
-                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
-                        <span class="text-gray-500 sm:text-sm">
+            <div v-for="(item, index) in nutritionValues" :key="index">
+                <label class="form-label">{{ item.title }}</label>
+                <div class="relative">
+                    <input type="text" inputmode="decimal" v-model="item.value"
+                        @input="formatNumber(item)" class="input-modern pr-14" />
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <span class="text-slate-400 text-sm">
                             {{ item.key === "calories" ? "kcal" : "g" }}
                         </span>
                     </div>
                 </div>
             </div>
 
-            <!-- 实际重量 -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ $t("实际重量") }} (g)
-                </label>
-                <div class="relative rounded-md shadow-sm">
-                    <input
-                        type="text"
-                        inputmode="decimal"
-                        v-model="weight"
-                        @input="formatWeightInput"
-                        class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    />
-                    <div
-                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
-                        <span class="text-gray-500 sm:text-sm">g</span>
+            <div>
+                <label class="form-label">{{ $t("实际重量") }} (g)</label>
+                <div class="relative">
+                    <input type="text" inputmode="decimal" v-model="weight"
+                        @input="formatWeightInput" class="input-modern pr-14" />
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <span class="text-slate-400 text-sm">g</span>
                     </div>
                 </div>
             </div>
 
-            <!-- 常用重量快速选择 -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ $t("常用重量快速选择") }}
-                </label>
+            <div>
+                <label class="form-label">{{ $t("常用重量快速选择") }}</label>
                 <div class="flex flex-wrap gap-2">
-                    <button
-                        v-for="(w, index) in commonWeights"
-                        :key="index"
-                        type="button"
-                        @click="weight = w.toString()"
-                        class="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors text-sm font-medium"
-                    >
+                    <button v-for="(w, index) in commonWeights" :key="index"
+                        type="button" @click="weight = w.toString()" class="tag-brand">
                         {{ w }}g
                     </button>
                 </div>
             </div>
 
-            <!-- 计算结果 -->
-            <div class="mt-6 p-4 bg-gray-100 rounded-lg">
-                <h3 class="text-md font-bold mb-2">{{ $t("计算结果") }}:</h3>
+            <div class="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <h3 class="text-sm font-semibold text-slate-700 mb-3">{{ $t("计算结果") }}</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <p class="text-sm text-gray-700">{{ $t("卡路里") }}:</p>
-                        <p class="text-lg font-medium">
-                            {{ finalNutrition.calories }}kcal
+                        <p class="text-xs text-slate-500 mb-0.5">{{ $t("卡路里") }}</p>
+                        <p class="text-lg font-bold text-amber-600">
+                            {{ finalNutrition.calories }}<span class="text-xs font-normal ml-0.5">kcal</span>
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">{{ $t("蛋白质") }}:</p>
-                        <p class="text-lg font-medium">
-                            {{ finalNutrition.protein }}g
+                        <p class="text-xs text-slate-500 mb-0.5">{{ $t("蛋白质") }}</p>
+                        <p class="text-lg font-bold text-emerald-600">
+                            {{ finalNutrition.protein }}<span class="text-xs font-normal ml-0.5">g</span>
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">{{ $t("脂肪") }}:</p>
-                        <p class="text-lg font-medium">
-                            {{ finalNutrition.fat }}g
+                        <p class="text-xs text-slate-500 mb-0.5">{{ $t("脂肪") }}</p>
+                        <p class="text-lg font-bold text-violet-600">
+                            {{ finalNutrition.fat }}<span class="text-xs font-normal ml-0.5">g</span>
                         </p>
                     </div>
                     <div>
-                        <p class="text-sm text-gray-700">{{ $t("碳水") }}:</p>
-                        <p class="text-lg font-medium">
-                            {{ finalNutrition.carbs }}g
+                        <p class="text-xs text-slate-500 mb-0.5">{{ $t("碳水") }}</p>
+                        <p class="text-lg font-bold text-sky-600">
+                            {{ finalNutrition.carbs }}<span class="text-xs font-normal ml-0.5">g</span>
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                <!-- 计算和添加按钮 -->
-                <button
-                    type="submit"
-                    class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                >
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="submit" class="btn-success w-full sm:w-auto">
                     {{ $t("计算并添加食物") }}
                 </button>
-                <!-- 清空表单按钮 -->
-                <button
-                    type="button"
-                    @click="resetForm"
-                    class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                >
+                <button type="button" @click="resetForm" class="btn-secondary w-full sm:w-auto">
                     {{ $t("清空表单") }}
                 </button>
             </div>
@@ -136,17 +87,18 @@
 </template>
 
 <script setup>
-import { ref, computed, inject } from 'vue';
+import { ref, computed } from 'vue';
 import {
     formatToTwoDecimals,
     calculatePackagedNutrition,
     addPackagedFood,
 } from '../utils/storage';
+import { formatNumberInput, formatRefNumberInput } from '../utils/format';
 import { useI18n } from "vue-i18n";
+import { useToast } from "../composables/useToast";
 
 const { t } = useI18n();
-// 尝试注入 toast 服务
-const toast = inject('toast', null);
+const toast = useToast();
 
 // 响应式数据
 const foodName = ref('');
@@ -169,17 +121,17 @@ const nutritionValues = ref([
         color: 'bg-green-500',
         key: 'protein',
     },
-    { 
-        title: t('脂肪 (每100g)')  , 
-        value: '', 
-        color: 'bg-yellow-400', 
-        key: 'fat' 
+    {
+        title: t('脂肪 (每100g)')  ,
+        value: '',
+        color: 'bg-yellow-400',
+        key: 'fat'
     },
-    { 
-        title: t('碳水 (每100g)')  , 
-        value: '', 
-        color: 'bg-blue-400', 
-        key: 'carbs' 
+    {
+        title: t('碳水 (每100g)')  ,
+        value: '',
+        color: 'bg-blue-400',
+        key: 'carbs'
     },
 ]);
 
@@ -270,28 +222,11 @@ const isFormValid = () => {
     return true;
 };
 
-// 格式化数字，确保输入有效
-const formatNumber = (item) => {
-    // 如果不是数字格式，转换为有效数字或清空
-    if (item.value && isNaN(parseFloat(item.value))) {
-        item.value = '';
-    }
-
-    // 移除非数字和非小数点字符
-    if (item.value) {
-        item.value = item.value.replace(/[^\d.]/g, '');
-
-        // 确保只有一个小数点
-        const parts = item.value.split('.');
-        if (parts.length > 2) {
-            item.value = parts[0] + '.' + parts.slice(1).join('');
-        }
-    }
-};
+const formatNumber = formatNumberInput;
 
 // 格式化重量输入
 const formatWeightInput = () => {
-    formatNumber({ value: weight.value });
+    formatRefNumberInput(weight);
 };
 
 // 重置表单
@@ -305,20 +240,7 @@ const resetForm = () => {
     });
 };
 
-// 显示提示
 const showToast = (message, type = 'success') => {
-    if (toast) {
-        if (type === 'success') {
-            toast.success(message);
-        } else if (type === 'error') {
-            toast.error(message);
-        }
-    } else if (window.$toast) {
-        if (type === 'success') {
-            window.$toast.success(message);
-        } else if (type === 'error') {
-            window.$toast.error(message);
-        }
-    }
+    toast[type](message);
 };
 </script>

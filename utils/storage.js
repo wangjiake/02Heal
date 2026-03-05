@@ -37,7 +37,6 @@ export const removeData = (key) => {
     if (!isClient()) return false;
 
     try {
-        localStorage.setItem(key, null);
         localStorage.removeItem(key);
         return true;
     } catch (error) {
@@ -160,11 +159,7 @@ export const saveTodayFoods = (foods) => {
 
 // 获取指定日期的食物
 export const getFoodsByDate = (dateString) => {
-    // 如果请求的是今天的数据，调用getTodayFoods来处理凌晨特殊情况
-    const now = new Date();
-    const currentDate = now.toISOString().split("T")[0];
-
-    if (dateString === currentDate) {
+    if (dateString === getTodayDateString()) {
         return getTodayFoods();
     }
 
@@ -174,11 +169,7 @@ export const getFoodsByDate = (dateString) => {
 
 // 保存指定日期的食物
 export const saveFoodsByDate = (dateString, foods) => {
-    // 如果保存到今天，调用saveTodayFoods来处理凌晨特殊情况
-    const now = new Date();
-    const currentDate = now.toISOString().split("T")[0];
-
-    if (dateString === currentDate) {
+    if (dateString === getTodayDateString()) {
         return saveTodayFoods(foods);
     }
 
@@ -303,21 +294,7 @@ export const applyGoalSet = (goalSetId) => {
     // Calculate today's consumed nutrition and update remaining goals
     const todayFoods = getTodayFoods();
     if (todayFoods && todayFoods.length > 0) {
-        // Calculate the daily totals from the foods
-        const dailyTotals = todayFoods.reduce(
-            (totals, food) => {
-                return {
-                    calories: formatToTwoDecimals(totals.calories + parseFloat(food.calories || 0)),
-                    protein: formatToTwoDecimals(totals.protein + parseFloat(food.protein || 0)),
-                    fat: formatToTwoDecimals(totals.fat + parseFloat(food.fat || 0)),
-                    carbs: formatToTwoDecimals(totals.carbs + parseFloat(food.carbs || 0))
-                };
-            },
-            { calories: 0, protein: 0, fat: 0, carbs: 0 }
-        );
-
-        // Update the remaining goals based on today's consumption
-        updateRemainingNutrition(dailyTotals);
+        updateRemainingNutrition(calculateDailyTotals(todayFoods));
     } else {
         // No foods consumed today, just trigger the update event
         dispatchEvent("nutritionGoalsUpdated");
@@ -327,7 +304,7 @@ export const applyGoalSet = (goalSetId) => {
 };
 
 // Add a new goal set to the list
-export const addGoalSet = (name, goals) => {
+export const addGoalSet = (name, goals, translationKey = null) => {
     const goalsList = getNutritionGoalsList();
 
     // Generate a unique ID
@@ -344,7 +321,8 @@ export const addGoalSet = (name, goals) => {
         id,
         name,
         goals: formattedGoals,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        ...(translationKey ? { translationKey } : {}),
     };
 
     // Add to the list
@@ -512,6 +490,21 @@ export const updateRemainingNutrition = (dailyTotals) => {
     return true;
 };
 
+// 计算食物列表的每日总计
+export const calculateDailyTotals = (foods) => {
+    return foods.reduce(
+        (totals, food) => {
+            return {
+                calories: formatToTwoDecimals(totals.calories + parseFloat(food.calories || 0)),
+                protein: formatToTwoDecimals(totals.protein + parseFloat(food.protein || 0)),
+                fat: formatToTwoDecimals(totals.fat + parseFloat(food.fat || 0)),
+                carbs: formatToTwoDecimals(totals.carbs + parseFloat(food.carbs || 0))
+            };
+        },
+        { calories: 0, protein: 0, fat: 0, carbs: 0 }
+    );
+};
+
 // ===== 专用方法：冷冻食物计算相关 =====
 
 // 获取保存的冷冻食物配置
@@ -576,20 +569,7 @@ export const addFrozenFood = (foodName, finalWeight, finalNutrition) => {
     saveTodayFoods(updatedFoods);
 
     // 计算并更新今日总计
-    const dailyTotals = updatedFoods.reduce(
-        (totals, food) => {
-            return {
-                calories: formatToTwoDecimals(totals.calories + parseFloat(food.calories || 0)),
-                protein: formatToTwoDecimals(totals.protein + parseFloat(food.protein || 0)),
-                fat: formatToTwoDecimals(totals.fat + parseFloat(food.fat || 0)),
-                carbs: formatToTwoDecimals(totals.carbs + parseFloat(food.carbs || 0))
-            };
-        },
-        { calories: 0, protein: 0, fat: 0, carbs: 0 }
-    );
-
-    // 更新剩余营养目标
-    updateRemainingNutrition(dailyTotals);
+    updateRemainingNutrition(calculateDailyTotals(updatedFoods));
 
     return newFood;
 };
@@ -635,20 +615,7 @@ export const addPackagedFood = (foodName, weight, nutrition) => {
     saveTodayFoods(updatedFoods);
 
     // 计算并更新今日总计
-    const dailyTotals = updatedFoods.reduce(
-        (totals, food) => {
-            return {
-                calories: formatToTwoDecimals(totals.calories + parseFloat(food.calories || 0)),
-                protein: formatToTwoDecimals(totals.protein + parseFloat(food.protein || 0)),
-                fat: formatToTwoDecimals(totals.fat + parseFloat(food.fat || 0)),
-                carbs: formatToTwoDecimals(totals.carbs + parseFloat(food.carbs || 0))
-            };
-        },
-        { calories: 0, protein: 0, fat: 0, carbs: 0 }
-    );
-
-    // 更新剩余营养目标
-    updateRemainingNutrition(dailyTotals);
+    updateRemainingNutrition(calculateDailyTotals(updatedFoods));
 
     return newFood;
 };

@@ -1,190 +1,109 @@
 <!-- components/TagManagement.vue -->
 <template>
-    <div class="p-4 bg-white rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">
+    <div class="card p-5 sm:p-6">
+        <h2 class="section-title mb-5">
             {{ isEditing ? $t("编辑标签") : $t("快速添加标签管理") }}
         </h2>
 
-        <form
-            @submit.prevent="isEditing ? updateTag() : saveTag()"
-            class="space-y-4 mb-6"
-        >
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ $t("标签名称") }}
-                </label>
-                <div class="relative rounded-md shadow-sm">
-                    <input
-                        type="text"
-                        v-model="tagName"
-                        :placeholder="$t('输入标签名称')"
-                        class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                        :disabled="isEditing && editingTag.fixed"
-                    />
-                </div>
+        <form @submit.prevent="isEditing ? updateTag() : saveTag()" class="space-y-4 mb-6">
+            <div>
+                <label class="form-label">{{ $t("标签名称") }}</label>
+                <input type="text" v-model="tagName" :placeholder="$t('输入标签名称')"
+                    class="input-modern" :disabled="isEditing && editingTag.fixed" />
             </div>
 
-            <div
-                v-for="(item, index) in nutritionValues"
-                :key="index"
-                class="mb-4"
-            >
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    {{ item.title }}
-                </label>
-                <div class="relative rounded-md shadow-sm">
-                    <input
-                        type="text"
-                        inputmode="decimal"
-                        v-model="item.value"
-                        @input="formatNumber(item)"
-                        class="block w-full pl-3 pr-12 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                    />
-                    <div
-                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
-                        <span class="text-gray-500 sm:text-sm">
+            <div v-for="(item, index) in nutritionValues" :key="index">
+                <label class="form-label">{{ item.title }}</label>
+                <div class="relative">
+                    <input type="text" inputmode="decimal" v-model="item.value"
+                        @input="formatNumber(item)" class="input-modern pr-14" />
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                        <span class="text-slate-400 text-sm">
                             {{ item.key === "calories" ? "kcal" : "g" }}
                         </span>
                     </div>
                 </div>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                <button
-                    type="submit"
-                    class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                >
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="submit" class="btn-success w-full sm:w-auto">
                     {{ isEditing ? $t("保存修改") : $t("保存标签") }}
                 </button>
-                <button
-                    type="button"
-                    @click="cancelEdit"
-                    class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                >
+                <button type="button" @click="cancelEdit" class="btn-secondary w-full sm:w-auto">
                     {{ isEditing ? $t("取消编辑") : $t("清空表单") }}
                 </button>
             </div>
         </form>
 
-        <div v-if="mergedTags.length > 0" class="mt-8">
-            <h3 class="text-lg font-bold mb-3">{{ $t("已保存的标签") }}</h3>
-            <ul class="divide-y divide-gray-200">
-                <li
-                    v-for="(tag, index) in mergedTags"
-                    :key="index"
-                    class="py-3 flex justify-between items-center"
-                    :class="{ 'bg-gray-50': tag.fixed }"
-                >
-                    <div class="flex-1">
-                        <div class="flex items-center">
-                            <p class="font-medium">{{ tag.name }}</p>
-                            <span
-                                v-if="tag.fixed"
-                                class="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full"
-                            >
+        <div v-if="mergedTags.length > 0" class="mt-8 pt-6 border-t border-slate-100">
+            <h3 class="section-title mb-4">{{ $t("已保存的标签") }}</h3>
+            <div class="space-y-3">
+                <div v-for="(tag, index) in mergedTags" :key="index"
+                    class="flex justify-between items-center gap-4 p-3 rounded-xl transition-colors"
+                    :class="tag.fixed ? 'bg-brand-50 border border-brand-100' : 'bg-slate-50 hover:bg-slate-100'">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <p class="font-medium text-slate-800 truncate">{{ tag.nameKey ? $t(tag.nameKey) : tag.name }}</p>
+                            <span v-if="tag.fixed"
+                                class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-brand-100 text-brand-700">
                                 {{ $t("系统标签") }}
                             </span>
                         </div>
-                        <p class="text-sm text-gray-500">
-                            {{ $t("卡路里") }}: {{ tag.calories }}kcal | {{ $t("蛋白质") }}:
-                            {{ tag.protein }}g | {{ $t("脂肪") }}: {{ tag.fat }}g | {{ $t("碳水") }}:
-                            {{ tag.carbs }}g
+                        <p class="text-xs text-slate-500 mt-1">
+                            {{ tag.calories }}kcal &middot;
+                            {{ $t("蛋白质") }} {{ tag.protein }}g &middot;
+                            {{ $t("脂肪") }} {{ tag.fat }}g &middot;
+                            {{ $t("碳水") }} {{ tag.carbs }}g
                         </p>
                     </div>
-                    <div class="flex space-x-3">
-                        <button
-                            @click="editTag(tag)"
-                            class="text-blue-500 hover:text-blue-700 focus:outline-none"
-                            :title="$t('编辑标签')"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                />
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        <button @click="editTag(tag)"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                            :title="$t('编辑标签')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
                         </button>
-                        <button
-                            @click="toggleTagVisibility(tag)"
-                            class="focus:outline-none"
-                            :title="tag.visible ? $t('隐藏标签') : $t('显示标签')"
-                        >
-                            <svg
-                                v-if="tag.visible"
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-6 w-6 text-blue-500"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                />
+                        <button @click="toggleTagVisibility(tag)"
+                            class="p-1.5 rounded-lg transition-colors"
+                            :class="tag.visible ? 'text-brand-500 hover:text-brand-700 hover:bg-brand-50' : 'text-slate-300 hover:text-slate-500 hover:bg-slate-100'"
+                            :title="tag.visible ? $t('隐藏标签') : $t('显示标签')">
+                            <svg v-if="tag.visible" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
                             </svg>
-                            <svg
-                                v-else
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-6 w-6 text-gray-500"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                                />
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
                             </svg>
                         </button>
-                        <button
-                            v-if="!tag.fixed"
-                            @click="removeTag(tag)"
-                            class="text-red-500 hover:text-red-700 focus:outline-none"
-                            :title="$t('删除标签')"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
+                        <button v-if="!tag.fixed" @click="removeTag(tag)"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                            :title="$t('删除标签')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
                             </svg>
                         </button>
                     </div>
-                </li>
-            </ul>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import {
     getData,
     setData,
@@ -194,11 +113,13 @@ import {
     saveVisibleFoodTags,
     dispatchEvent,
 } from '../utils/storage';
+import { formatNumberInput } from '../utils/format';
+import { getFixedTags } from '../utils/constants';
 import { useI18n } from "vue-i18n";
+import { useToast } from "../composables/useToast";
 
 const { t } = useI18n();
-// 尝试注入 toast 服务
-const toast = inject('toast', null);
+const toast = useToast();
 
 // 响应式数据
 const tagName = ref('');
@@ -214,29 +135,7 @@ const editingTag = ref(null);
 const originalTagName = ref('');
 
 // 固定标签列表 - 不可删除但可以隐藏
-const fixedTags = ref([
-    {
-        name: t('鸡蛋'),
-        calories: 72,
-        protein: 6.3,
-        fat: 4.8,
-        carbs: 0.6,
-        visible: true,
-        fixed: true,
-        createdAt: new Date().toISOString(),
-    },
-    {
-        name: t('香蕉'),
-        calories: 105,
-        protein: 1.3,
-        fat: 0.4,
-        carbs: 27,
-        visible: true,
-        fixed: true,
-        createdAt: new Date().toISOString(),
-    },
-    
-]);
+const fixedTags = ref(getFixedTags());
 
 // 合并固定标签和用户标签
 const mergedTags = computed(() => {
@@ -248,11 +147,11 @@ const getFixedTagsVisibility = () => {
     return getData('fixedTagsVisibility', null);
 };
 
-// 保存固定标签的可见性
+// 保存固定标签的可见性（用 id 作为 key，避免语言切换后 key 不匹配）
 const saveFixedTagsVisibility = () => {
     const visibilityMap = {};
     fixedTags.value.forEach((tag) => {
-        visibilityMap[tag.name] = tag.visible;
+        visibilityMap[tag.id] = tag.visible;
     });
     setData('fixedTagsVisibility', visibilityMap);
 };
@@ -273,65 +172,32 @@ const updateVisibleTags = () => {
 // 定义emit事件
 const emit = defineEmits(['tag-added', 'tag-updated']);
 
-// 格式化数字，确保输入有效
-const formatNumber = (item) => {
-    // 如果不是数字格式，转换为有效数字或清空
-    if (item.value && isNaN(parseFloat(item.value))) {
-        item.value = '';
-    }
-
-    // 移除非数字和非小数点字符
-    if (item.value) {
-        item.value = item.value.replace(/[^\d.]/g, '');
-
-        // 确保只有一个小数点
-        const parts = item.value.split('.');
-        if (parts.length > 2) {
-            item.value = parts[0] + '.' + parts.slice(1).join('');
-        }
-    }
-};
+const formatNumber = formatNumberInput;
 
 // 保存标签
 const saveTag = () => {
     // 检查标签名称
     if (!tagName.value.trim()) {
-        if (toast) {
-            toast.error(t('请输入标签名称!'));
-        } else if (window.$toast) {
-            window.$toast.error(t('请输入标签名称!'));
-        }
+        toast.error(t('请输入标签名称!'));
         return;
     }
 
-    // 检查是否与固定标签重名
     if (fixedTags.value.some((tag) => tag.name === tagName.value.trim())) {
-        if (toast) {
-            toast.error(t('标签名称已存在于系统标签中!'));
-        } else if (window.$toast) {
-            window.$toast.error(t('标签名称已存在于系统标签中!'));
-        }
+        toast.error(t('标签名称已存在于系统标签中!'));
         return;
     }
 
-    // 检查是否与用户标签重名
     if (savedTags.value.some((tag) => tag.name === tagName.value.trim())) {
-        if (toast) {
-            toast.error(t('标签名称已存在!'));
-        } else if (window.$toast) {
-            window.$toast.error(t('标签名称已存在!'));
-        }
+        toast.error(t('标签名称已存在!'));
         return;
     }
 
-    // 处理输入值，如果为空则默认为0
     nutritionValues.value.forEach((item) => {
         if (!item.value || item.value.trim() === '') {
             item.value = '0';
         }
     });
 
-    // 准备标签数据
     const newTag = {
         name: tagName.value,
         calories:
@@ -352,27 +218,16 @@ const saveTag = () => {
             parseFloat(
                 nutritionValues.value.find((item) => item.key === 'carbs').value
             ) || 0,
-        visible: true, // 默认可见
-        fixed: false, // 用户添加的标签不是固定的
+        visible: true,
+        fixed: false,
         createdAt: new Date().toISOString(),
     };
 
-    // 添加到标签列表
     savedTags.value.push(newTag);
     saveFoodTags(savedTags.value);
     updateVisibleTags();
-
-    // 清空表单
     resetForm();
-
-    // 显示成功提示
-    if (toast) {
-        toast.success(t('标签已保存!'));
-    } else if (window.$toast) {
-        window.$toast.success(t('标签已保存!'));
-    }
-
-    // 触发组件事件
+    toast.success(t('标签已保存!'));
     emit('tag-added', newTag);
 };
 
@@ -400,27 +255,16 @@ const editTag = (tag) => {
 // 更新标签
 const updateTag = () => {
     if (!tagName.value.trim()) {
-        if (toast) {
-            toast.error(t('请输入标签名称!'));
-        } else if (window.$toast) {
-            window.$toast.error(t('请输入标签名称!'));
-        }
+        toast.error(t('请输入标签名称!'));
         return;
     }
 
-    // 如果修改了名称，检查是否与其他标签重名
     if (tagName.value !== originalTagName.value) {
-        // 检查是否与固定标签重名
         if (fixedTags.value.some((tag) => tag.name === tagName.value.trim())) {
-            if (toast) {
-                toast.error(t('标签名称已存在于系统标签中!'));
-            } else if (window.$toast) {
-                window.$toast.error(t('标签名称已存在于系统标签中!'));
-            }
+            toast.error(t('标签名称已存在于系统标签中!'));
             return;
         }
 
-        // 检查是否与其他用户标签重名
         if (
             savedTags.value.some(
                 (tag) =>
@@ -428,11 +272,7 @@ const updateTag = () => {
                     tag.name !== originalTagName.value
             )
         ) {
-            if (toast) {
-                toast.error(t('标签名称已存在!'));
-            } else if (window.$toast) {
-                window.$toast.error(t('标签名称已存在!'));
-            }
+            toast.error(t('标签名称已存在!'));
             return;
         }
     }
@@ -466,7 +306,7 @@ const updateTag = () => {
     if (editingTag.value.fixed) {
         // 更新固定标签（只允许修改营养值，不允许修改名称）
         const tagIndex = fixedTags.value.findIndex(
-            (t) => t.name === originalTagName.value
+            (t) => t.id === editingTag.value.id
         );
         if (tagIndex !== -1) {
             fixedTags.value[tagIndex].calories = updatedCalories;
@@ -503,14 +343,7 @@ const updateTag = () => {
     editingTag.value = null;
     originalTagName.value = '';
 
-    // 显示成功提示
-    if (toast) {
-        toast.success(t('标签已更新!'));
-    } else if (window.$toast) {
-        window.$toast.success(t('标签已更新!'));
-    }
-
-    // 触发组件事件
+    toast.success(t('标签已更新!'));
     emit('tag-updated', editingTag.value);
 };
 
@@ -533,7 +366,7 @@ const toggleTagVisibility = (tag) => {
     // 找出是固定标签还是用户标签
     if (tag.fixed) {
         // 固定标签 - 直接在fixedTags中找到并修改
-        const tagIndex = fixedTags.value.findIndex((t) => t.name === tag.name);
+        const tagIndex = fixedTags.value.findIndex((t) => t.id === tag.id);
         if (tagIndex !== -1) {
             fixedTags.value[tagIndex].visible =
                 !fixedTags.value[tagIndex].visible;
@@ -551,12 +384,8 @@ const toggleTagVisibility = (tag) => {
 
     updateVisibleTags();
 
-    const status = tag.visible ? t('隐藏') : t('可见'); // 注意这里取反，因为UI会立即更新
-    if (toast) {
-        toast.success(t('标签已设为') + status + '!');
-    } else if (window.$toast) {
-        window.$toast.success(t('标签已设为') + status + '!');
-    }
+    const status = tag.visible ? t('隐藏') : t('可见');
+    toast.success(t('标签已设为') + status + '!');
 };
 
 // 移除标签
@@ -569,12 +398,7 @@ const removeTag = (tag) => {
             saveFoodTags(savedTags.value);
             updateVisibleTags();
 
-            // 显示提示
-            if (toast) {
-                toast.success(t('标签已删除!'));
-            } else if (window.$toast) {
-                window.$toast.success(t('标签已删除!'));
-            }
+            toast.success(t('标签已删除!'));
         }
     }
 };
@@ -594,23 +418,22 @@ onMounted(() => {
         savedTags.value = savedTagsData;
     }
 
-    // 恢复固定标签的可见性
+    // 恢复固定标签的可见性（用 id 匹配）
     const fixedTagsVisibility = getFixedTagsVisibility();
     if (fixedTagsVisibility) {
         fixedTags.value.forEach((tag) => {
-            if (fixedTagsVisibility[tag.name] !== undefined) {
-                tag.visible = fixedTagsVisibility[tag.name];
+            if (fixedTagsVisibility[tag.id] !== undefined) {
+                tag.visible = fixedTagsVisibility[tag.id];
             }
         });
     }
 
-    // 检查是否有保存的固定标签修改
+    // 检查是否有保存的固定标签修改（用 id 匹配）
     const savedFixedTags = getData('fixedTags', null);
     if (savedFixedTags) {
-        // 更新固定标签的营养值
         savedFixedTags.forEach((savedTag) => {
             const index = fixedTags.value.findIndex(
-                (t) => t.name === savedTag.name
+                (t) => t.id === savedTag.id
             );
             if (index !== -1) {
                 fixedTags.value[index].calories = savedTag.calories;

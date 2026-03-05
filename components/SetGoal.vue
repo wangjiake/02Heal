@@ -1,176 +1,106 @@
 <!-- components/SetGoal.vue -->
 <template>
-    <div class="p-4 bg-white rounded-lg shadow">
-        <h2 class="text-xl font-bold mb-4">{{ $t("运动日和非运动日目标") }}</h2>
+    <div class="card p-5 sm:p-6">
+        <h2 class="section-title mb-5">{{ $t("运动日和非运动日目标") }}</h2>
 
         <!-- 目标列表选择 -->
         <div class="mb-6">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-lg font-medium">{{ $t("目标列表") }}</h3>
-                <button
-                    @click="
-                        showCreateForm = true;
-                        editingIndex = null;
-                        resetGoalForm();
-                    "
-                    class="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
-                >
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold text-slate-700">{{ $t("目标列表") }}</h3>
+                <button @click="showCreateForm = true; editingIndex = null; resetGoalForm();"
+                    class="btn-primary !py-1.5 !px-3 !text-sm">
                     {{ $t("新建目标") }}
                 </button>
             </div>
 
             <!-- 目标集合列表 -->
-            <div v-if="goalsList.length > 0" class="mb-3 space-y-2">
-                <div
-                    v-for="(goalSet, index) in goalsList"
-                    :key="goalSet.id"
-                    class="flex items-center justify-between p-3 bg-gray-50 border rounded hover:bg-gray-100"
-                    :class="{
-                        'border-blue-500 bg-blue-50':
-                            activeGoalSetId === goalSet.id,
-                    }"
-                >
-                    <div
-                        class="flex-grow cursor-pointer"
-                        @click="selectGoalSet(goalSet.id)"
-                    >
-                        <div class="font-medium">{{ goalSet.name }}</div>
-                        <div class="text-xs text-gray-500">
-                            {{ $t("卡路里") }}: {{ getGoalValue(goalSet, "calories") }} kcal
-                            | {{ $t("蛋白质") }}: {{ getGoalValue(goalSet, "protein") }}g |
-                            {{ $t("脂肪") }}: {{ getGoalValue(goalSet, "fat") }}g | {{ $t("碳水") }}:
-                            {{ getGoalValue(goalSet, "carbs") }}g
+            <div v-if="goalsList.length > 0" class="space-y-3">
+                <div v-for="(goalSet, index) in goalsList" :key="goalSet.id"
+                    class="flex items-center justify-between gap-4 p-4 rounded-xl transition-all duration-200 cursor-pointer"
+                    :class="activeGoalSetId === goalSet.id
+                        ? 'bg-brand-50 border-2 border-brand-300 shadow-sm'
+                        : 'bg-slate-50 border border-slate-100 hover:bg-slate-100'"
+                    @click="selectGoalSet(goalSet.id)">
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-slate-800">{{ goalSet.translationKey ? $t(goalSet.translationKey) : goalSet.name }}</div>
+                        <div class="text-xs text-slate-500 mt-1">
+                            {{ getGoalValue(goalSet, "calories") }} kcal &middot;
+                            {{ $t("蛋白质") }} {{ getGoalValue(goalSet, "protein") }}g &middot;
+                            {{ $t("脂肪") }} {{ getGoalValue(goalSet, "fat") }}g &middot;
+                            {{ $t("碳水") }} {{ getGoalValue(goalSet, "carbs") }}g
                         </div>
                     </div>
-                    <div class="flex space-x-2">
-                        <button
-                            @click="editGoalSet(index)"
-                            class="text-blue-500 hover:text-blue-700 focus:outline-none"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                />
+                    <div class="flex items-center gap-1 flex-shrink-0" @click.stop>
+                        <button @click="editGoalSet(index)"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
                         </button>
-                        <button
-                            @click="confirmDeleteGoalSet(goalSet.id)"
-                            class="text-red-500 hover:text-red-700 focus:outline-none"
-                            :disabled="goalsList.length === 1"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-5 w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
+                        <button @click="confirmDeleteGoalSet(goalSet.id)"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                            :disabled="goalsList.length === 1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
                             </svg>
                         </button>
                     </div>
                 </div>
             </div>
-            <div v-else class="text-gray-500 text-center py-4">
+            <div v-else class="text-slate-400 text-center py-8 text-sm">
                 {{ $t("没有保存的目标，请创建新目标") }}
             </div>
         </div>
 
         <!-- 创建/编辑目标表单 -->
-        <div v-if="showCreateForm" class="border-t pt-4 mt-4">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium">
+        <div v-if="showCreateForm" class="border-t border-slate-100 pt-6 mt-6">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-base font-semibold text-slate-700">
                     {{ editingIndex !== null ? $t("编辑目标") : $t("创建新目标") }}
                 </h3>
-                <button
-                    @click="showCreateForm = false"
-                    class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"
-                        />
+                <button @click="showCreateForm = false"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
             </div>
 
             <form @submit.prevent="saveGoalSet" class="space-y-4">
-                <!-- 目标名称 -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ $t("目标名称") }}
-                    </label>
-                    <input
-                        type="text"
-                        v-model="goalForm.name"
-                        class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        :placeholder="$t('例如: 减脂目标, 增肌目标')"
-                        required
-                    />
+                <div>
+                    <label class="form-label">{{ $t("目标名称") }}</label>
+                    <input type="text" v-model="goalForm.name" class="input-modern"
+                        :placeholder="$t('例如: 减脂目标, 增肌目标')" required />
                 </div>
 
-                <!-- 营养目标数值 -->
-                <div
-                    v-for="(item, index) in goalForm.goals"
-                    :key="index"
-                    class="mb-4"
-                >
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        {{ item.title }}
-                    </label>
-                    <div class="relative rounded-md shadow-sm">
-                        <input
-                            type="text"
-                            inputmode="decimal"
-                            v-model="item.value"
-                            @input="formatNumber(item)"
-                            class="block w-full pl-3 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <div
-                            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                        >
-                            <span class="text-gray-500 sm:text-sm">
+                <div v-for="(item, index) in goalForm.goals" :key="index">
+                    <label class="form-label">{{ item.title }}</label>
+                    <div class="relative">
+                        <input type="text" inputmode="decimal" v-model="item.value"
+                            @input="formatNumber(item)" class="input-modern pr-14" />
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <span class="text-slate-400 text-sm">
                                 {{ item.key === "calories" ? "kcal" : "g" }}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                    <button
-                        type="submit"
-                        class="w-full sm:w-auto px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                    >
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button type="submit" class="btn-primary w-full sm:w-auto">
                         {{ editingIndex !== null ? $t("更新目标") : $t("保存新目标") }}
                     </button>
-                    <button
-                        type="button"
-                        @click="resetToDefault"
-                        class="w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                    >
+                    <button type="button" @click="resetToDefault" class="btn-secondary w-full sm:w-auto">
                         {{ $t("重置为默认值") }}
                     </button>
                 </div>
@@ -180,8 +110,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue';
-// 导入存储服务
+import { ref, onMounted } from 'vue';
 import {
     getNutritionGoals,
     setNutritionGoals,
@@ -196,11 +125,12 @@ import {
     deleteGoalSet,
     applyGoalSet,
 } from '../utils/storage';
+import { formatNumberInput } from '../utils/format';
 import { useI18n } from "vue-i18n";
+import { useToast } from "../composables/useToast";
 
 const { t } = useI18n();
-// 尝试注入 toast 服务
-const toast = inject('toast', null);
+const toast = useToast();
 
 // 默认营养目标数据
 const defaultNutritionGoals = [
@@ -236,24 +166,7 @@ const getGoalValue = (goalSet, key) => {
     return goal ? parseFloat(goal.value).toFixed(1) : '0.0';
 };
 
-// 格式化数字，确保输入有效
-const formatNumber = (item) => {
-    // 如果不是数字格式，转换为有效数字或清空
-    if (item.value && isNaN(parseFloat(item.value))) {
-        item.value = '';
-    }
-
-    // 移除非数字和非小数点字符
-    if (item.value) {
-        item.value = item.value.replace(/[^\d.]/g, '');
-
-        // 确保只有一个小数点
-        const parts = item.value.split('.');
-        if (parts.length > 2) {
-            item.value = parts[0] + '.' + parts.slice(1).join('');
-        }
-    }
-};
+const formatNumber = formatNumberInput;
 
 // 重置表单为默认值
 const resetGoalForm = () => {
@@ -275,15 +188,7 @@ const selectGoalSet = (id) => {
     setActiveGoalSetId(id);
     activeGoalSetId.value = id;
 
-    // 注意：不需要在这里手动计算今日消耗，已在 applyGoalSet 函数中实现
-    // applyGoalSet 会自动计算今日已消耗的营养并更新剩余目标
-
-    // 显示提示
-    if (toast) {
-        toast.success(t('已切换目标集，并更新了今日剩余目标!'));
-    } else if (window.$toast) {
-        window.$toast.success(t('已切换目标集，并更新了今日剩余目标!'));
-    }
+    toast.success(t('已切换目标集，并更新了今日剩余目标!'));
 
     // 触发组件事件
     emit('goals-updated');
@@ -307,11 +212,7 @@ const editGoalSet = (index) => {
 const confirmDeleteGoalSet = (id) => {
     // 如果只有一个目标集，不允许删除
     if (goalsList.value.length <= 1) {
-        if (toast) {
-            toast.error(t('至少需要保留一个目标集!'));
-        } else if (window.$toast) {
-            window.$toast.error(t('至少需要保留一个目标集!'));
-        }
+        toast.error(t('至少需要保留一个目标集!'));
         return;
     }
 
@@ -322,12 +223,7 @@ const confirmDeleteGoalSet = (id) => {
     goalsList.value = getNutritionGoalsList();
     activeGoalSetId.value = getActiveGoalSetId();
 
-    // 显示提示
-    if (toast) {
-        toast.success(t('目标集已删除!'));
-    } else if (window.$toast) {
-        window.$toast.success(t('目标集已删除!'));
-    }
+    toast.success(t('目标集已删除!'));
 
     // 触发组件事件
     emit('goals-updated');
@@ -344,12 +240,7 @@ const saveGoalSet = () => {
     );
 
     if (!allValid) {
-        // 显示错误提示
-        if (toast) {
-            toast.error(t('请输入有效的数字!'));
-        } else if (window.$toast) {
-            window.$toast.error(t('请输入有效的数字!'));
-        }
+        toast.error(t('请输入有效的数字!'));
         return;
     }
 
@@ -374,30 +265,15 @@ const saveGoalSet = () => {
     }
 
     if (result) {
-        // 刷新列表
+        const wasEditing = editingIndex.value !== null;
+
         goalsList.value = getNutritionGoalsList();
         activeGoalSetId.value = getActiveGoalSetId();
 
-        // 关闭表单
         showCreateForm.value = false;
         editingIndex.value = null;
 
-        // 显示成功提示
-        if (toast) {
-            toast.success(
-                editingIndex.value !== null
-                    ? t('目标集已更新!')
-                    : t('新目标集已创建!')
-            );
-        } else if (window.$toast) {
-            window.$toast.success(
-                editingIndex.value !== null
-                    ? t('目标集已更新!')
-                    : t('新目标集已创建!')
-            );
-        }
-
-        // 触发组件事件
+        toast.success(wasEditing ? t('目标集已更新!') : t('新目标集已创建!'));
         emit('goals-updated');
     }
 };
@@ -409,11 +285,24 @@ onMounted(() => {
 
     // 如果没有保存的目标集，创建一个默认的
     if (!savedGoalsList || savedGoalsList.length === 0) {
-        const defaultId = addGoalSet(t('默认目标'), defaultNutritionGoals);
+        const defaultId = addGoalSet(t('默认目标'), defaultNutritionGoals, '默认目标');
         if (defaultId) {
             setActiveGoalSetId(defaultId);
             savedGoalsList = getNutritionGoalsList();
         }
+    }
+
+    // 为旧数据补上 translationKey（兼容已有 localStorage 数据）
+    const defaultGoalNames = ['默认目标', 'Default Goal', 'デフォルト目標'];
+    let needSave = false;
+    savedGoalsList.forEach((goalSet) => {
+        if (!goalSet.translationKey && defaultGoalNames.includes(goalSet.name)) {
+            goalSet.translationKey = '默认目标';
+            needSave = true;
+        }
+    });
+    if (needSave) {
+        saveNutritionGoalsList(savedGoalsList);
     }
 
     goalsList.value = savedGoalsList;
