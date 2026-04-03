@@ -26,6 +26,11 @@
             </div>
         </div>
 
+        <!-- Shutdown notice -->
+        <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {{ $t('shutdown_notice') }}
+        </div>
+
         <!-- Dashboard card -->
         <div class="mb-8">
             <ShowCardComponent />
